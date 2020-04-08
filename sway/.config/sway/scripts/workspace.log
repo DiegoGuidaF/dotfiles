@@ -1,0 +1,49 @@
+2019-12-20 17:31:13,556 - __main__ - DEBUG - Namespace(go=None, move=None, switch=1)
+2019-12-20 17:31:13,556 - __main__ - INFO - Received switch
+2020-02-13 00:17:32,700 - workspace - DEBUG - Current WS numbers are [1, 2, 3, 5]
+2020-02-13 00:17:32,701 - workspace - DEBUG - Skipped number found
+2020-02-13 00:17:32,702 - workspace - DEBUG - Pos is 4, num is 5
+2020-02-13 00:18:59,660 - workspace - INFO - Go to fsdfs
+2020-02-13 00:27:40,340 - workspace - INFO - Go to fsdfs
+2020-02-13 00:28:23,974 - workspace - INFO - Go to fsdfs
+2020-02-13 00:28:43,818 - workspace - INFO - Go to fsdfs
+2020-02-13 00:28:43,819 - workspace - INFO - 1.
+2020-02-13 00:28:43,820 - workspace - INFO - 2.
+2020-02-13 00:28:43,820 - workspace - INFO - 3.
+2020-02-13 00:28:43,820 - workspace - INFO - 5asbc
+2020-02-13 00:29:26,857 - workspace - INFO - Go to fsdfs
+2020-02-13 00:29:26,858 - workspace - INFO - 1.
+2020-02-13 00:29:26,858 - workspace - INFO - 2.
+2020-02-13 00:29:26,858 - workspace - INFO - 3.
+2020-02-13 00:29:26,858 - workspace - INFO - 5asbc
+2020-02-13 00:29:48,198 - workspace - INFO - Go to fsdfs
+2020-02-13 00:29:48,199 - workspace - INFO - 1.
+2020-02-13 00:29:48,199 - workspace - INFO - 2.
+2020-02-13 00:29:48,200 - workspace - INFO - 3.
+2020-02-13 00:29:48,200 - workspace - INFO - 5asbc
+2020-02-13 00:29:53,326 - workspace - INFO - Go to fsdfs
+2020-02-13 00:29:53,326 - workspace - INFO - 1.
+2020-02-13 00:29:53,327 - workspace - INFO - 2.
+2020-02-13 00:29:53,327 - workspace - INFO - 3.
+2020-02-13 00:29:53,327 - workspace - INFO - 5asbc
+2020-02-13 00:30:08,284 - workspace - INFO - Go to fsdfs
+2020-02-13 00:30:08,285 - workspace - INFO - 1.
+2020-02-13 00:30:08,285 - workspace - INFO - 2.
+2020-02-13 00:30:08,285 - workspace - INFO - 3.
+2020-02-13 00:30:08,285 - workspace - INFO - 5asbc
+2020-02-13 00:30:08,285 - workspace - INFO - ffddss
+2020-02-13 00:30:08,285 - workspace - INFO - Creating workspace fsdfs
+2020-02-13 00:30:08,286 - workspace - DEBUG - Current WS numbers are [1, 2, 3, 5]
+2020-02-13 00:30:08,286 - workspace - DEBUG - Skipped number found
+2020-02-13 00:30:08,286 - workspace - DEBUG - Pos is 4, num is 5
+2020-02-13 00:30:08,286 - workspace - INFO - Cmd is 'workspace 4.fsdfs'
+2020-02-13 00:34:09,392 - workspace - INFO - Go to fsdfs
+2020-02-13 00:34:09,393 - workspace - INFO - 1.
+2020-02-13 00:34:09,393 - workspace - INFO - 2.
+2020-02-13 00:34:09,393 - workspace - INFO - 3.
+2020-02-13 00:34:09,393 - workspace - INFO - 5asbc
+2020-02-13 00:34:09,393 - workspace - INFO - ffddss
+2020-02-13 00:34:09,393 - workspace - INFO - Creating workspace fsdfs
+2020-02-13 00:34:09,394 - workspace - DEBUG - Current WS numbers are [1, 2, 3, 5]
+2020-02-13 00:34:09,394 - workspace - DEBUG - Skipped number found 4
+2020-02-13 00:34:09,394 - workspace - DEBUG - Cmd is 'workspace 4.fsdfs'

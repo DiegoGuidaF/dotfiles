@@ -1,0 +1,83 @@
+packages:
+  general-utilities:
+    arch:
+      - iw  # Intel implementation of wpa_supplicant (wifi connection)
+      - gnome-calculator
+      - pavucontrol  # Audio control
+      - stow 
+      - openssh
+      - tree
+      - ripgrep # Fast! grep
+      
+    aur:
+      - font-manager  # Font visualizer, like gucharmap
+      - firefox-nightly
+      - gotop # Improved system monitor (Htop replacement)
+      - nerd-fonts-hack  # Font with patched glyphs
+
+  kitty:
+    description: Terminal
+    arch:
+      - kitty  # Fast simple GPU accelerated terminal
+      - kitty-terminfo
+
+  nvim:
+    arch:
+      - yarn # For CoC
+      - bash-language-server
+      - neovim
+      - python-pynvim
+      - ccls # C language server
+
+  zsh:
+    arch:
+      - zsh
+    aur:
+      - oh-my-zsh-git
+      - zsh-autosuggestions
+      - zsh-completions
+
+  mako:
+    description: Show notifications
+    arch:
+      - mako
+
+  sway:
+    description: Tiling window manager, Wayland
+    arch:
+      - light  # Backlight manager for wayland
+      - wl-clipboard
+    aur:
+      - sway-git
+      - waybar-git  # Status bar for wayland
+      - redshift-wlr-gamma-control-git # Redshift for wayland
+
+  polybar:
+    description: Light and powerful status bar
+    aur:
+      - polybar
+      - nerd-fonts-hack  # Font with patched glyphs
+
+  rofi:
+    description: Fast app launcher, window switcher...
+    arch:
+      - rofi
+
+  waybar:
+    description: Customizable Status bar (Polybar replacement for wayland)
+    arch:
+      - waybar
+
+  mpv:
+    description: Video player
+    arch:
+      - mpv
+
+  bin:
+    description: Custom scripts
+
+  wallpapers:
+    description: Collection of wallpapers
+
+  fontconfig:
+    description: Font config. Improves rendering quality

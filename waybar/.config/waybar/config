@@ -1,0 +1,151 @@
+// vim:ft=json
+{
+    "layer": "top",
+    "height": 22,
+    "position": "top",
+
+    // Choose the order of the modules
+    "modules-left": ["sway/workspaces", "sway/mode"],
+    "modules-center": ["custom/pacman", "temperature", "cpu", "memory","pulseaudio", "network", "battery", "backlight", "custom/redshift"],
+    "modules-right": ["custom/media", "clock", "tray"],
+
+    // Modules configuration
+    "sway/workspaces": {
+         "disable-scroll": true,
+         "all-outputs": false,
+         "format": "{}",
+         "format-icons": {
+             "1": "",
+             "2": "",
+             "3": ""
+         }
+     },
+    "sway/mode": {
+        "format": " {}",
+        "max-length": 20
+    },
+    "tray": {
+        // "icon-size": 21,
+        "spacing": 10
+    },
+    "clock": {
+        "interval": 5,
+        "format": "{:%a %d %b %H:%M} ",
+        "tooltip": false
+    },
+    "cpu": {
+        "interval": 5,
+        "format": " {usage}%",
+        "states": {
+            "good": 10,
+            "warning": 40,
+            "critical": 90
+        }
+    }, 
+    "memory": {
+        "interval": 5,
+        "format": "  {}%"
+    },
+    "battery": {
+        "format": "{icon} {capacity}%",
+        "format-icons": ["", "", "", "", ""],
+        "format-charging": " {capacity}%",
+        // If battery is in the full state (from full until next state value)
+        // hide it.
+        "format-full": "",
+        "format-charging-full": "",
+        "interval": 60,
+        "states": {
+            "full": 100,
+            "good": 95,
+            "warning": 20,
+            "critical": 5
+        }
+    },
+    "network": {
+        "interval": 60,
+        "format": "Unknown",
+        "format-wifi": "{icon}({signalStrength}%)",
+        "format-ethernet": "{icon}",
+        "format-disconnected": "{icon}",
+        "format-alt": "{ipaddr}/{cidr} {icon}",
+        "format-icons": {
+            "wifi": [" "],
+            "ethernet": [" "],
+            "disconnected": ["睊"]
+        },
+        "max-length": 20,
+        "format-alt-click": "click-left",
+        "tooltip": true,
+        "tooltip-format-wifi": "{essid}||{signaldBm}dB||{frequency}MHz\n{ipaddr}/{cidr}\n{bandwidthUpBits}/{bandwidthDownBits}",
+        "tooltip-format-ethernet": "{ipaddr}/{cidr}\n{bandwidthUpBits}/{bandwidthDownBits}",
+        "tooltip-format": ""
+    },
+    "pulseaudio": {
+        "scroll-step": 5,
+        "format": "{icon}{volume}%",
+        "format-bluetooth": "{icon}{volume}%",
+        "format-muted": "",
+        "format-icons": {
+            "headphones": " ",
+            "handsfree": " ",
+            "headset": " ",
+            "phone": [" "],
+            "portable": " ",
+            "car": " ",
+            "default": ["  ", "  ", "墳 ", "  "]
+        },
+        "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
+        "on-click-right": "pavucontrol",
+        "tooltip": false
+    },
+    "backlight": {
+        "device": "intel_backlight",
+        "format": "{icon}",
+        "interval": 5,
+        "format-alt": "{icon}{percent}%",
+        "format-alt-click": "click-right",
+        "format-icons": ["", "ﯧ", "ﯦ"],
+        "on-scroll-up":   "light -A 5",
+        "on-scroll-down": "light -U 5"
+    },
+     "temperature": {
+        "interval": 5,
+        "critical-threshold": 80,
+        "format-critical": " {temperatureC}°C",
+        "format": " {temperatureC}°C"
+    },
+    "custom/media": {
+        "format": "{icon} {}",
+        "return-type": "json",
+        "max-length": 40,
+        "format-icons": {
+            "spotify": " ",
+            "default": "🎜 "
+        },
+        "escape": true,
+        "exec": "$HOME/.config/waybar/scripts/mediaplayer.py --player spotify 2> /dev/null",
+        "on-click": "playerctl play-pause",
+        "tooltip": false
+    },
+  "custom/pacman": {
+        "format": " {}",
+        "interval": 3600,
+        // Show update number, empty if none found so element is hidden.
+        "exec": "checkupdates | wc -l |sed 's/^0$//g'",
+        "exec-if": "ping -c 1 8.8.8.8"
+    },
+  "custom/redshift": {
+        "format": "{icon}",
+        "return-type": "json",
+        "interval": 30,
+        "exec": "$HOME/bin/launch_redshift.sh status",
+        "signal": 8,
+        "on-click": "launch_redshift.sh toggle && pkill -RTMIN+8 waybar",
+        "format-icons": {
+            "active": " ",
+            "inactive": " "
+        },
+        "tooltip": false
+    }
+}

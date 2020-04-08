@@ -1,0 +1,497 @@
+#############
+# Variable  #
+#############
+# Logo key. Use Mod1 for Alt.
+set $mod Mod4
+
+# Height of the bar so floating windows can be placed
+# below it
+set $height 15
+
+# Laptop screen
+set $LAPTOP_OUT eDP-1
+set $EXT_CENTER DP-1
+set $EXT_RIGHT HDMI-A-2
+
+# Home row direction keys, like vim
+set $left h
+set $down j
+set $up k
+set $right l
+
+#Default programs
+set $browser    firefox-nightly
+set $music      spotify
+set $term       kitty
+
+# Your preferred application launcher
+# Note: it's recommended that you pass the final command to sway
+set $menu '$HOME/bin/launch_rofi.sh -show run | xargs swaymsg exec --'
+
+# Custom script to control WS by selecting name and etc
+set $ws_controller ~/.config/sway/scripts/workspace.py
+
+# Script to take screenshots
+set $screenshot ~/.config/sway/scripts/screenshot.sh
+
+# Set some workspaces
+set $WSBROWSER  1.
+set $WSPERSONAL 2.
+set $WSDEV      3.
+# TODO: Put steam icon
+set $WSSTEAM    9.戮
+
+# Wallpaper
+set $wallpaper ~/.config/wallpapers/chosen_wallpaper
+
+# GRUVBOX COLORS
+set $background #282828
+set $foreground #d5c4a1
+set $cursor #d5c4a1
+set $color0 #282828
+set $color1 #fb4934
+set $color2 #b8bb26
+set $color3 #fabd2f
+set $color4 #83a598
+set $color5 #d3869b
+set $color6 #8ec07c
+set $color7 #d5c4a1
+set $color8 #665c54
+set $color9 #fb4934
+set $color10 #b8bb26
+set $color11 #fabd2f
+set $color12 #83a598
+set $color13 #d3869b
+set $color14 #8ec07c
+set $color15 #fbf1c7
+
+###########
+# Startup #
+###########
+# Notification manager (like dunst)
+exec --no-startup-id mako
+
+# Start polkit so that apps can launch a password prompt
+exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
+
+# Notify on network changes
+exec --no-startup-id networkd-notify
+
+# Night mode - Redden the screen as the daylight diminishes.
+exec --no-startup-id launch_redshift.sh toggle
+
+
+# Set initial workspaces
+workspace $WSBROWSER; exec $browser
+workspace $WSPERSONAL; exec $term
+workspace $WSDEV; exec $term
+
+# On init set workspaces in work mode.
+output '*' enable
+#output $LAPTOP_OUT position 0 0
+#output $EXT_RIGHT position 3840 0
+#output $EXT_CENTER position 1920 0
+# Home setup
+output $EXT_RIGHT position 1920 0
+output $LAPTOP_OUT position 0 0
+#output $EXT_CENTER position 1920 0
+
+############
+# Settings #
+############
+
+# Set GTK settings via gsettings. This is the proper way since
+# doing it through env variables doesn't allow setting all variables.
+set $gnome-schema org.gnome.desktop.interface
+exec_always {
+    gsettings set $gnome-schema gtk-theme 'Arc-Dark'
+    gsettings set $gnome-schema icon-theme 'Arc'
+    #gsettings set $gnome-schema cursor-theme 'Your cursor Theme'
+}
+
+# Configure container colors
+#                       BORDER       BACKGROUND     TEXT          INDICATOR    CHILD_BORDER
+client.background       $background
+client.focused          $color3      $background    $color3       $color2      $color3
+client.focused_inactive $color6      $background    $foreground   $foreground  $color2
+client.unfocused        $foreground  $background    $foreground   $foreground  $color7
+client.urgent           $color1      $color1        $color1       $color1      $color1
+
+### Output configuration
+output * bg $wallpaper fill
+
+# Automatically toggle laptop display when lid is closed
+bindswitch lid:on output $LAPTOP_OUT disable
+bindswitch lid:off output $LAPTOP_OUT enable
+
+# return to previous workspace back-and-forth
+workspace_auto_back_and_forth yes
+
+# Set a default small border, title won't be seen but selected container yes
+default_border pixel 1
+# Only show borders when more than 1 container
+smart_borders on
+# Only show gap when more than 1 container
+smart_gaps on
+gaps inner 1
+gaps outer 0
+
+# Drag floating windows by holding down $mod and left mouse button.
+# Resize them with right mouse button + $mod.
+# Despite the name, also works for non-floating windows.
+# Change normal to inverse to use left mouse button for resizing and right
+# mouse button for dragging.
+floating_modifier $mod normal
+
+focus_follows_mouse yes 
+
+#This option determines what to do when attempting to focus over the edge of a container. If set to no, the focused
+#container will retain focus, if there are no other containers in the direction. If set to yes, focus will be
+#wrapped to the opposite edge of the container, if there are no other containers in the direction. If set to force,
+#focus will be wrapped to the opposite edge of the container, even if there are other containers in the direction.
+#If set to workspace, focus will wrap like in the yes case and additionally wrap when moving outside of workspaces
+#boundaries.  Default is yes.
+focus_wrapping no
+
+### Idle configuration
+# Reload setup on resume to fix waybar (can be fixed just by restarting waybar if required)
+exec swayidle -w \
+         timeout 600 'swaylock-fancy' \
+         timeout 900 'swaymsg "output * dpms off"' \
+           resume 'swaymsg "output * dpms on"' \
+         before-sleep 'swaylock-fancy'
+
+# Touchpad configuration
+input "2:7:SynPS/2_Synaptics_TouchPad" {
+    #Disable while typing
+   dwt enabled
+   tap enabled
+   drag enabled
+   natural_scroll enabled
+   middle_emulation enabled
+   accel_profile flat
+   pointer_accel 0.4
+}
+
+# Keyboard configuration
+input type:keyboard {
+    repeat_delay 200
+    repeat_rate 30
+    # Change between es/us layout with capslock key
+    xkb_layout us,es
+    xkb_options grp:caps_toggle,grp_led:caps
+}
+
+################
+# Key bindings #
+################
+#------CUSTOM-------------
+# Launch firefox
+bindsym $mod+q exec $browser
+
+bindsym XF86Calculator exec gnome-calculator
+# Toggle touchpad on F9 function
+bindsym XF86Keyboard  exec swaymsg input "2:7:SynPS/2_Synaptics_TouchPad" events toggle "disabled enabled"
+
+# Volume
+bindsym XF86AudioRaiseVolume exec pactl set-sink-volume @DEFAULT_SINK@ +5%
+bindsym XF86AudioLowerVolume exec pactl set-sink-volume @DEFAULT_SINK@ -5%
+bindsym XF86AudioMute exec pactl set-sink-mute @DEFAULT_SINK@ toggle
+bindsym XF86AudioMicMute exec pactl set-source-mute @DEFAULT_SOURCE@ toggle
+
+# Screen brightness
+bindsym XF86MonBrightnessUp exec light -A 5
+bindsym XF86MonBrightnessDown exec light -U 5
+
+# Link F5 function to toggle outputs off
+bindsym --locked $mod+F5 exec swaymsg output "*" dpms on
+
+# Take screenshot, select area
+bindsym $mod+p exec $screenshot
+
+# Lock desktop
+bindsym $mod+b exec swaylock-fancy
+# Change focus with tab keys
+bindsym $mod+Tab focus right
+bindsym $mod+Shift+Tab focus left
+
+# Work monitors setup
+bindsym $mod+Shift+w output * enable, output $LAPTOP_OUT position 0 0, output $EXT_HDMI position -3840 0, output $EXT_DP position -1920 0
+
+bindsym $mod+t exec $ws_controller --go
+bindsym $mod+Shift+t exec $ws_controller --move
+
+bindsym Ctrl+space exec makoctl dismiss
+bindsym Ctrl+Shift+space exec makoctl dismiss -a
+
+# Layout stuff:
+#
+# You can "split" the current object of your focus with
+# $mod+b or $mod+v, for horizontal and vertical splits
+# respectively.
+bindsym $mod+Ctrl+h splitv
+bindsym $mod+Ctrl+v splith
+
+# Enter global mode
+bindsym $mod+g fullscreen global
+
+# Switch the current container between different layout styles
+bindsym $mod+e layout stacking
+bindsym $mod+w layout tabbed
+bindsym $mod+s layout toggle split
+
+# move to last workspace
+bindsym $mod+z workspace back_and_forth
+
+# move workspace between outputs
+bindsym $mod+y move workspace to output left
+
+# Bind keys above jkl to each monitor as they are seen in front of you.
+# TODO: TMP Bindsym until script is done.
+# LEFT
+bindsym $mod+u move workspace to output $LAPTOP_OUT
+# Center
+bindsym $mod+i move workspace to output $EXT_CENTER
+# Right
+bindsym $mod+o move workspace to output $EXT_RIGHT
+
+# Change monitor positions.
+# Note: Mirroring doesn't work as-of-yet in sway.
+# To easily manage them, two different set of bindings done for each monitor
+# HDMI Output
+# TODO: IDEA: Use variables and modes to generate a "Function" to choose display (Inner, DP, HDMI), this sets
+#       a variable which is used in another mode which moves it somewhere.
+#       Define variables for the laptop position (Preferably always 0 0) then use variables to hold current 
+#       position of hdmi, DP. Either that or just do a python script..
+set $output $EXT_HDMI
+set $mode_display $output: Up, Down, Left, Right, Disable(m)
+mode "hdmi_output" {
+    bindsym Up output $output enable, output $output position 0 1080, mode "default"
+    bindsym Down output $output enable, output $output position 0 -1080, mode "default"
+    bindsym Left output $output enable, output $output position -1920 0, mode "default"
+    bindsym Right output $output enable, output $output position 1920 0, mode "default"
+    bindsym m output $output disable, mode "default"
+
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+bindsym $mod+m mode "hdmi_output"
+
+# External display port Output
+# Note: This output requires pressing Shift key too
+set $output $EXT_DP
+set $mode_display $output: Up, Down, Left, Right, Disable(m)
+mode "dp_output" {
+    bindsym Up output $output enable, output $output position 0 -1080, mode "default"
+    bindsym Down output $output enable, output $output position 0 1080, mode "default"
+    bindsym Left output $output enable, output $output position -1920 0, mode "default"
+    bindsym Right output $output enable, output $output position 1920 0, mode "default"
+    bindsym m output $output disable, mode "default"
+
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+bindsym $mod+Shift+m mode "dp_output"
+
+################
+# Window rules #
+################
+
+# Pull MUSIC window from scratchpad according to marks
+bindsym $mod+Ctrl+m [con_mark="music"] scratchpad show
+
+# windows that should be floating
+for_window [window_role="pop-up"] floating enable
+for_window [window_role="bubble"] floating enable
+for_window [window_role="task_dialog"] floating enable
+for_window [window_role="Preferences"] floating enable
+for_window [window_role="About"] floating enable
+
+for_window [window_type="dialog"] floating enable
+for_window [window_type="menu"] floating enable
+
+for_window [class="(?i)gsimplecal"] floating enable, move position mouse, move down $height px
+for_window [class="Gnome-calculator"] floating enable
+for_window [class="(?i)qemu-system"] floating enable
+for_window [class="(?i)VirtualBox" title="(?i)Manager"] floating enable
+for_window [class="(?i)VirtualBox"] floating enable
+for_window [class="(?i)blueman"] floating enable
+for_window [class="(?i)pcmanfm"] floating enable
+for_window [class="(?i)Gnome-system-monitor"] floating enable, move position mouse, move down $height px
+for_window [class="(?i)xfce4-power-manager-settings"] floating enable, move position mouse, move down $height px
+for_window [class="(?i)cmst"] floating enable, move position mouse, move down $height px
+for_window [class="(?i)TeamViewer"] floating enable, move position mouse, move down $height px
+
+for_window [instance="__scratchpad"] floating enable
+for_window [instance="__nmtui"] floating enable
+for_window [class="(?i)recordmydesktop"] floating enable
+for_window [class="(?i)GpicView"] floating enable
+
+for_window [class="(?i)pavucontrol"] floating enable, move position mouse, move down $height px
+for_window [class="(?i)pavucontrol" instance="pavucontrol-bar"] move down $height px
+
+for_window [class="(?i)arandr"] floating enable, move position mouse
+
+for_window [class="(?i)flameshot"] floating enable
+
+# Make python interfaces be floating
+for_window [class="(?i).py"] floating enable, move position mouse
+
+# Setup Marks for windows so that they can be pulled from the scratchpad easily.
+for_window [class="Spotify"] mark "music", floating enable, move scratchpad
+
+assign [class="(?i)Steam"] workspace $WSSTEAM
+assign [class="(?i)Steam" title="(?i)Friends List"] floating enable, workspace $WSSTEAM
+assign [class="(?i)Steam" title="(?i)Steam - News"] floating enable, workspace $WSSTEAM
+
+# Config dialog for Android Studio import 
+for_window [instance="sun-awt-X11-XDialogPeer"] floating enable
+for_window [instance="sun-awt-X11-XWindowPeer"] floating enable
+
+# Wayland specific rules
+for_window [app_id="(?i)pavucontrol"] floating enable
+for_window [app_id="(?i)blueman-manager"] floating enable, move position mouse, move down $height px
+
+for_window [app_id="(?i)gnome-calculator"] floating enable, move position mouse
+for_window [app_id="(?i)Nightly - Sharing Indicator"] floating enable, move position mouse
+
+############################
+#------DEFAULTS-------------
+############################
+# Start a terminal
+bindsym $mod+Return exec $term
+
+# Kill focused window
+bindsym $mod+Shift+q kill
+
+# Start your launcher
+bindsym $mod+d exec $menu
+
+# Reload the configuration file
+bindsym $mod+Shift+c reload
+
+# Exit sway (logs you out of your Wayland session)
+bindsym $mod+Shift+e exec swaynag -t warning -m 'You pressed the exit shortcut. Do you really want to exit sway? This will end your Wayland session.' -b 'Yes, exit sway' 'swaymsg exit'
+#
+# Moving around:
+#
+# Move your focus around
+bindsym $mod+$left focus left
+bindsym $mod+$down focus down
+bindsym $mod+$up focus up
+bindsym $mod+$right focus right
+# Or use $mod+[up|down|left|right]
+bindsym $mod+Left focus left
+bindsym $mod+Down focus down
+bindsym $mod+Up focus up
+bindsym $mod+Right focus right
+
+# Move the focused window with the same, but add Shift
+bindsym $mod+Shift+$left move left
+bindsym $mod+Shift+$down move down
+bindsym $mod+Shift+$up move up
+bindsym $mod+Shift+$right move right
+# Ditto, with arrow keys
+bindsym $mod+Shift+Left move left
+bindsym $mod+Shift+Down move down
+bindsym $mod+Shift+Up move up
+bindsym $mod+Shift+Right move right
+#
+# Workspaces:
+#
+# Switch to workspace
+bindsym $mod+1 exec swaymsg workspace number 1
+bindsym $mod+2 exec swaymsg workspace number 2
+bindsym $mod+3 exec swaymsg workspace number 3
+bindsym $mod+4 exec swaymsg workspace number 4
+bindsym $mod+5 exec swaymsg workspace number 5
+bindsym $mod+6 exec swaymsg workspace number 6
+bindsym $mod+7 exec swaymsg workspace number 7
+bindsym $mod+8 exec swaymsg workspace number 8
+bindsym $mod+9 exec swaymsg workspace number 9
+bindsym $mod+0 exec swaymsg workspace number 10
+# Move focused container to workspace
+bindsym $mod+Shift+1 move container to workspace 1
+bindsym $mod+Shift+2 move container to workspace 2
+bindsym $mod+Shift+3 move container to workspace 3
+bindsym $mod+Shift+4 move container to workspace 4
+bindsym $mod+Shift+5 move container to workspace 5
+bindsym $mod+Shift+6 move container to workspace 6
+bindsym $mod+Shift+7 move container to workspace 7
+bindsym $mod+Shift+8 move container to workspace 8
+bindsym $mod+Shift+9 move container to workspace 9
+bindsym $mod+Shift+0 move container to workspace 10
+# Note: workspaces can have any name you want, not just numbers.
+# We just use 1-10 as the default.
+#
+# Layout stuff:
+#
+# You can "split" the current object of your focus with
+# $mod+b or $mod+v, for horizontal and vertical splits
+# respectively.
+#bindsym $mod+b splith
+#bindsym $mod+v splitv
+
+# Switch the current container between different layout styles
+#bindsym $mod+s layout stacking
+#bindsym $mod+w layout tabbed
+#bindsym $mod+e layout toggle split
+
+# Make the current focus fullscreen
+bindsym $mod+f fullscreen
+
+# Toggle the current focus between tiling and floating mode
+bindsym $mod+Shift+space floating toggle
+
+# Swap focus between the tiling area and the floating area
+bindsym $mod+space focus mode_toggle
+
+# Move focus to the parent container
+bindsym $mod+a focus parent
+#
+# Scratchpad:
+#
+# Sway has a "scratchpad", which is a bag of holding for windows.
+# You can send windows there and get them back later.
+
+# Move the currently focused window to the scratchpad
+bindsym $mod+Shift+minus move scratchpad
+
+# Show the next scratchpad window or hide the focused scratchpad window.
+# If there are multiple scratchpad windows, this command cycles through them.
+bindsym $mod+minus scratchpad show
+
+# Sway key modes
+# Resizing containers:
+mode "resize" {
+    # left will shrink the containers width
+    # right will grow the containers width
+    # up will shrink the containers height
+    # down will grow the containers height
+    bindsym $left resize shrink width 10px
+    bindsym $down resize grow height 10px
+    bindsym $up resize shrink height 10px
+    bindsym $right resize grow width 10px
+
+    # Ditto, with arrow keys
+    bindsym Left resize shrink width 10px
+    bindsym Down resize grow height 10px
+    bindsym Up resize shrink height 10px
+    bindsym Right resize grow width 10px
+
+    # Return to default mode
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+bindsym $mod+r mode "resize"
+
+
+#
+# Status Bar:
+#
+# Read `man 5 sway-bar` for more information about this section.
+bar {
+    swaybar_command waybar
+}
+
+include /etc/sway/config.d/*

@@ -1,0 +1,30 @@
+#!/bin/bash
+# Allows toggling microphone improvements on/off:
+# Improvements are:
+# - Noise Cancellation
+# - Beamforming: Ignore sound that is not comming in fron of laptop. Setting for a laptop
+#                with webcam on screen top and two microphone on its sides.
+
+#Check if mic cancel is already on!
+# If so disable it
+if pacmd list modules short | grep -q module-echo-cancel; then
+    echo -n "Mic cancel is running, shutting it down..."
+    pactl unload-module module-echo-cancel 2>/dev/null
+    echo " Done!"
+else
+    echo "Mic cancel not running, starting it..."
+    newSourceName="echoCancelSource"
+    newSinkName="echoCancelSink"
+    
+    #Microphone parameters
+    aecArgs="analog_gain_control=0 digital_gain_control=1 beamforming=1 mic_geometry=-0.015,0,0,0.015,0,0"
+
+    # Reload "module-echo-cancel"
+    echo -n "Loading \"module-echo-cancel\" with \"aec_args=$aecArgs\""
+    if pactl load-module module-echo-cancel use_master_format=1 aec_method=webrtc aec_args=\"$aecArgs\" source_name=$newSourceName sink_name=$newSinkName; then
+    	# Set a new default source and sink, if module-echo-cancel has loaded successfully.
+    	pacmd set-default-source $newSourceName
+    	pacmd set-default-sink $newSinkName
+        echo " Done!"
+    fi
+fi

@@ -1,0 +1,37 @@
+#!/bin/bash
+# gfb: Git Find Branch - Script to fuzzy search on git branches and copy the result.
+
+REMOTE_BRANCH_PREFIX="remotes/origin/"
+
+if ! [ -x "$(command -v fzf)" ]; then
+  echo 'Error: fzf is not installed.' >&2
+  echo 'Check https://github.com/junegunn/fzf' >&2
+  exit 1
+fi
+if [ $# != 0 ]; then
+    echo "No arguments required"
+    exit 1
+fi
+
+# Use different copy cmds depending if on wayland or X11 display servers.
+if [ -n WAYLAND_DISPLAY ]; then
+    hash wl-copy 2>/dev/null || { echo >&2 "wl-copy not installed. Required for wayland"; exit 1; }
+    copy_cmd='wl-copy'
+else
+    hash xclip 2>/dev/null || { echo >&2 "xclip not installed. Required for x11"; exit 1; }
+    copy_cmd='xclip -selection "clipboard"'
+fi
+
+inside_git_repo="$(git rev-parse --is-inside-work-tree 2>/dev/null)"
+if [ ! "$inside_git_repo" ]; then
+    echo "Not in a git repository"
+    exit 1
+fi
+
+selected_branch=$(git branch -a| fzf +s --tac --height 40%)
+selected_branch=${selected_branch#*$REMOTE_BRANCH_PREFIX}
+if [ "$selected_branch" == "" ]; then
+    exit 1
+fi
+# Echo selection and copy it to clipboard
+echo -n "$selected_branch" | $copy_cmd

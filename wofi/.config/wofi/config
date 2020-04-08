@@ -1,0 +1,8 @@
+fork
+width=600
+height=400
+mode=drun,run
+filter_rate=100 
+allow_images=true
+run-always_parse_args=true
+prompt=

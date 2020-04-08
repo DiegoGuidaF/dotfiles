@@ -1,0 +1,22 @@
+#!/bin/zsh
+# Script to test different pulseaudio configs easily.
+# It restarts pulseaudio and spotify while also resuming it.
+# This makets it easier to hear differences in quality
+
+echo "Killing spotify..."
+pkill spotify &>/dev/null
+pulseaudio -k
+sleep 0.5
+pulseaudio --start
+sleep 0.5
+echo "Pulseaudio restarted"
+
+echo "Starting spotify..."
+# Run spotify from flatpak
+nohup spotify  &>/dev/null &
+while [ "$(playerctl status)" != "Playing" ]; do
+    playerctl play
+    sleep 0.1
+done
+
+echo "Done! Audio should be playing"

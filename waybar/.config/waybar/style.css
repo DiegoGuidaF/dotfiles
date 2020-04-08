@@ -1,0 +1,112 @@
+@import "./gruvbox.css";
+* {
+    background-color: @background;
+    color: @foreground;
+    border: none;
+    border-radius: 0;
+    font-family: Hack Nerd Font;
+    font-size: 14px;
+    min-height: 0;
+}
+
+/* Dont forget commas after each module! */
+#clock,
+#battery,
+#cpu,
+#memory,
+#network,
+#pulseaudio,
+#tray,
+#backlight,
+#temperature,
+#custom-media,
+#custom-pacman,
+#custom-redshift
+{
+    background-color: @background;
+    padding: 0 5px;
+    margin: 0 2px;
+    color: @foreground;
+}
+
+/* https://github.com/Alexays/Waybar/wiki/FAQ#the-workspace-buttons-have-a-strange-hover-effect */
+#workspaces button:hover {
+    background: @background;
+    box-shadow: inherit;
+    border-bottom: 3px solid #ffffff;
+}
+
+
+#workspaces button {
+    padding: 0 5px;
+    color: @foreground;
+}
+
+#workspaces button.focused {
+    color: @color3;
+    border-bottom: 1px solid @color3;
+}
+
+
+#mode {
+    color: @color9;
+}
+
+@keyframes blink {
+    to {
+        color: black;
+    }
+}
+
+#battery.warning:not(.charging) {
+    color: @color3;
+}
+#battery.critical:not(.charging) {
+    color: @color1;
+}
+#battery.charging{
+    color: @color2;
+}
+
+#cpu {
+    color: @foreground;
+}
+#cpu.warning{
+    color: @color3;
+}
+#cpu.critical{
+    color: @color1;
+}
+
+#temperature {
+    color: @foreground;
+}
+#temperature.critical{
+    color: @color1;
+}
+
+#memory {
+    color: @foreground;
+}
+
+#network {
+    color: @foreground;
+}
+
+#pulseaudio {
+    color: @foreground;
+}
+
+#custom-media.custom-spotify {
+    color: @color2;
+}
+
+/* IDEA: Instead of using a separate icon,
+ * use same as for backlight control and make it change
+ * the color based on this class.
+ * Not clear how to do this in css,
+ */
+#custom-redshift.active{
+    color: @color3;
+}
+
