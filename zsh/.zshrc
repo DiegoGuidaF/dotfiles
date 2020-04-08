@@ -90,6 +90,7 @@ export TERM="xterm-256color"
 
 # Set env variables for wayland if running it
 if [ -n $WAYLAND_DISPLAY ]; then
+    export XDG_SESSION_TYPE="wayland"
     export XDG_CURRENT_DESKTOP="sway"
 
     # Enable usage of wayland for QT
@@ -98,10 +99,6 @@ if [ -n $WAYLAND_DISPLAY ]; then
 
     # Force firefox to enable firefox
     export MOZ_ENABLE_WAYLAND=1
-
-    # Force GTK to use wayland
-    export GDK_BACKEND="wayland"
-    export CLUTTER_BACKEND="wayland"
 
     # Fix some java applications, such as Android Studio
     # showing white screen
