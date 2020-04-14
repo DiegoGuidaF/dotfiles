@@ -1,9 +1,5 @@
 ignore-empty-password
-color=000000
 font="Hack 12"
 hide-keyboard-layout
-key-hl-color=d5c4a1
-layout-bg-color=282828
-layout-border-color=282828
-line-uses-inside
-no-unlock-indicator
+# Increase default radius from 50
+indicator-radius=60
