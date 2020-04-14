@@ -3,7 +3,10 @@
 # lock screen via swaylock
 # It adds a lock icon to the wallpaper (saved in cache), the lock is dark/white depending on
 # wallpaper's brightness.
+# Parameters WILL be forwarded to swaylock
 set -o errexit -o noclobber -o nounset
+
+[ $# -ge 1 ] && echo "Forwarding params to swaylock -- $@"
 
 readonly WALLPAPER_DIR=$HOME/.config/wallpapers/lockscreen/
 [ -d "${WALLPAPER_DIR}" ] || (echo "Couldn't find wallpapers dir"; exit 1)
@@ -11,8 +14,8 @@ readonly UTILITY_DIR=$WALLPAPER_DIR/util
 [ -d "${UTILITY_DIR}" ] || (echo "Couldn't find wallpapers dir"; exit 1)
 readonly CACHE_DIR=$HOME/.config/wallpapers/lockscreen/.cache
 [ -d "${CACHE_DIR}" ] || mkdir -p ${CACHE_DIR}
-
-readonly random_wallpaper="$(find ${WALLPAPER_DIR} -maxdepth 1 -type f | shuf -n1)"
+# Randomly select only files of image type.
+readonly random_wallpaper="$(find ${WALLPAPER_DIR} -maxdepth 1 -type f -exec file {} \; | grep -o -P '^.+: \w+ image' | awk '{print $1}' | sed 's/://'| shuf -n1)"
 readonly random_wallpaper_cache_file="$CACHE_DIR/lock-$(basename $random_wallpaper)"
 echo "Chosen wallpaper is $(basename $random_wallpaper)"
 
@@ -53,4 +56,4 @@ else
     echo "Wallpaper already exists in cache, no need to add lock icon!"
 fi
 
-swaylock -i "${random_wallpaper_cache_file}" "${param[@]}"
+swaylock -i "${random_wallpaper_cache_file}" "${param[@]}" $@

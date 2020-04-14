@@ -1,0 +1,4 @@
+# Don't upload pictures placed here by default since most of them
+# will be my own pictures.
+*.jpg
+*.png

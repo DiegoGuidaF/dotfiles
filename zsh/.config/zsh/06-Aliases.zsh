@@ -11,8 +11,6 @@ alias mut="make debug_x86"
 alias mg="make gcov"
 alias ml="make lcov"
 
-# Alias to dotfiles using a git bare repo.
-alias config='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME'
 # Tldr, help by examples
 alias help="tldr"
 

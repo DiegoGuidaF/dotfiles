@@ -31,6 +31,9 @@ set $menu '$HOME/bin/launch_rofi.sh -show run | xargs swaymsg exec --'
 # Custom script to control WS by selecting name and etc
 set $ws_controller ~/.config/sway/scripts/workspace.py
 
+# Custom script to control WS by selecting name and etc
+set $screenlock "$HOME/bin/launch_swaylock"
+
 # Script to take screenshots
 set $screenshot ~/.config/sway/scripts/screenshot.sh
 
@@ -156,10 +159,10 @@ focus_wrapping no
 ### Idle configuration
 # Reload setup on resume to fix waybar (can be fixed just by restarting waybar if required)
 exec swayidle -w \
-         timeout 600 'swaylock-fancy' \
+         timeout 600 '$screenlock -f' \
          timeout 900 'swaymsg "output * dpms off"' \
            resume 'swaymsg "output * dpms on"' \
-         before-sleep 'swaylock-fancy'
+         before-sleep '$screenlock -f'
 
 # Touchpad configuration
 input "2:7:SynPS/2_Synaptics_TouchPad" {
@@ -210,7 +213,7 @@ bindsym --locked $mod+F5 exec swaymsg output "*" dpms on
 bindsym $mod+p exec $screenshot
 
 # Lock desktop
-bindsym $mod+b exec swaylock-fancy
+bindsym $mod+b exec $screenlock -f
 # Change focus with tab keys
 bindsym $mod+Tab focus right
 bindsym $mod+Shift+Tab focus left
