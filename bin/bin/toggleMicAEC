@@ -17,7 +17,7 @@ else
     newSinkName="echoCancelSink"
     
     #Microphone parameters
-    aecArgs="analog_gain_control=0 digital_gain_control=1 beamforming=1 mic_geometry=-0.015,0,0,0.015,0,0"
+    aecArgs="analog_gain_control=0 digital_gain_control=1 beamforming=1 mic_geometry=-0.015,0,0,0.015,0,0 noise_suppression=1"
 
     # Reload "module-echo-cancel"
     echo -n "Loading \"module-echo-cancel\" with \"aec_args=$aecArgs\""
