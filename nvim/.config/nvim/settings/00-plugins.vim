@@ -54,7 +54,8 @@ Plug 'mhinz/vim-startify'
 Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app & yarn install'  }
 
 " Alpha state utility to seach through many different things in a popup window
-Plug 'liuchengxu/vim-clap'
+"Plug 'liuchengxu/vim-clap'
+Plug 'liuchengxu/vim-clap', { 'do': ':Clap install-binary!' }
 
 Plug 'aouelete/sway-vim-syntax'
 
