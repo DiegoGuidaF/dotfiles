@@ -96,13 +96,11 @@ if [ -n $WAYLAND_DISPLAY ]; then
     # Enable usage of wayland for QT
     export QT_QPA_PLATFORM="wayland-egl"
     export QT_WAYLAND_DISABLE_WINDOWDECORATION="1"
+    # To use your monitor's DPI instead of the default of 96 DPI:
+    export QT_WAYLAND_FORCE_DPI=physical
 
     # Force firefox to enable firefox
     export MOZ_ENABLE_WAYLAND=1
-
-    # Fix some java applications, such as Android Studio
-    # showing white screen
-    export _JAVA_AWT_WM_NONREPARENTING=1
 fi
 
 # Skip compresion of makepkg for AUR packages, this saves
