@@ -73,16 +73,16 @@ set $color15 #fbf1c7
 # Startup #
 ###########
 # Notification manager (like dunst)
-exec --no-startup-id mako
+exec mako
 
 # Start polkit so that apps can launch a password prompt
-exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
+exec /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
 
 # Notify on network changes
-exec --no-startup-id networkd-notify
+exec networkd-notify
 
 # Night mode - Redden the screen as the daylight diminishes.
-exec --no-startup-id launch_redshift.sh toggle
+exec launch_redshift.sh toggle
 
 
 # Set initial workspaces
