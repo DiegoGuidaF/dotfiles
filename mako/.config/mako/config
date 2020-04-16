@@ -61,7 +61,7 @@ ignore-timeout=0
 
 [app-name=Spotify]
 font=Hack 10
-background-color=#14643bA0
+background-color=#14643bD0
 format="<b>Now Playing:</b>\n%s\n%b"
 text-color=#FFFFFF
 border-size=0

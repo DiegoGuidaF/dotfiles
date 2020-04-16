@@ -1,6 +1,8 @@
 #!/bin/bash
 set -o pipefail
 
+readonly BAT_LVL_WARN=15
+readonly BAT_LVL_CRITICAL=3
 BATTINFO=`acpi -b`
 NOTIFY_SEND_CMD="notify-send -u critical -t 0 -a battery_check"
 # File used to check if we have already warned about low battery,
@@ -8,9 +10,8 @@ NOTIFY_SEND_CMD="notify-send -u critical -t 0 -a battery_check"
 NOTIFY_CACHE_FILE="/tmp/battery_check_notified"
 
 current_bat_level="$(echo $BATTINFO | grep "Discharging" | grep -oe "[0-9]*%" | sed 's/%//g')"
+echo "Battery level is at $current_bat_level. Warn/Crit - $BAT_LVL_WARN/$BAT_LVL_CRITICAL"
 
-readonly BAT_LVL_WARN=15
-readonly BAT_LVL_CRITICAL=3
 
 # Battery CRITICAL
 if [[ $current_bat_level -le $BAT_LVL_CRITICAL ]] ; then
