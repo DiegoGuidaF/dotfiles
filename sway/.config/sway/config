@@ -31,8 +31,9 @@ set $menu '$HOME/bin/launch_rofi.sh -show run | xargs swaymsg exec --'
 # Custom script to control WS by selecting name and etc
 set $ws_controller ~/.config/sway/scripts/workspace.py
 
-# Custom script to control WS by selecting name and etc
-set $screenlock "$HOME/bin/launch_swaylock"
+# Command to lock screen: Pause playback and then launch script
+# that randomly selects a lockscreen picture.
+set $screenlock playerctl -a pause && $HOME/bin/launch_swaylock
 
 # Script to take screenshots
 set $screenshot ~/.config/sway/scripts/screenshot.sh
@@ -124,8 +125,8 @@ client.urgent           $color1      $color1        $color1       $color1      $
 output * bg $wallpaper fill
 
 # Automatically toggle laptop display when lid is closed
-bindswitch lid:on output $LAPTOP_OUT disable
-bindswitch lid:off output $LAPTOP_OUT enable
+bindswitch --reload lid:on output $LAPTOP_OUT disable
+bindswitch --reload lid:off output $LAPTOP_OUT enable
 
 # return to previous workspace back-and-forth
 workspace_auto_back_and_forth yes
@@ -159,6 +160,7 @@ focus_wrapping no
 ### Idle configuration
 # Reload setup on resume to fix waybar (can be fixed just by restarting waybar if required)
 exec swayidle -w \
+         lock '$screenlock -f' \
          timeout 600 '$screenlock -f' \
          timeout 900 'swaymsg "output * dpms off"' \
            resume 'swaymsg "output * dpms on"' \
