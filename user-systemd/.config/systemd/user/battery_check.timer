@@ -1,0 +1,11 @@
+[Unit]
+Description=Timer to check battery status
+
+[Timer]
+# Delay on boot
+OnActiveSec=1min
+# Executed periodically each:
+OnUnitActiveSec=5min
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,10 @@
+[Unit]
+Description=Battery level check
+
+[Service]
+Type=oneshot
+ExecStart=%h/scripts/battery_check.sh
+
+[Install]
+WantedBy=multi-user.target
+

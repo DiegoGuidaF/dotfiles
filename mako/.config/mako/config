@@ -27,10 +27,12 @@ margin=5
 # See Directional Values for more information.
 padding=5
 # Set popup border size to px pixels.
-border-size=5
+border-size=3
 border-color=#fb4934
+background-color=#282828
+text-color=#ebdbb2
 # Set popup corner radius to px pixels.
-border-radius=3
+border-radius=5
 
 icons=1
 max-icon-size=64
@@ -57,24 +59,18 @@ format=<b>%s</b>\n%b
 default-timeout=5000
 ignore-timeout=0
 
-[urgency=low]
-background-color=#282828
-text-color=#ebdbb2
-
-[urgency=normal]
-background-color=#282828
-text-color=#ebdbb2
-
-[urgency=high]
-background-color=#282828
-text-color=#ebdbb2
-
 [app-name=Spotify]
-font=Hack 8
-background-color=#14643b
+font=Hack 10
+background-color=#14643bA0
 format="<b>Now Playing:</b>\n%s\n%b"
 text-color=#FFFFFF
 border-size=0
 ignore-timeout=1
 default-timeout=3000
 border-radius=15
+
+[app-name=battery_check]
+font=Hack 14
+background-color=#282828
+text-color=#fabd2f
+border-color=#fb4934
