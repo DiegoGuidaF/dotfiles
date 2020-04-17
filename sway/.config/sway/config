@@ -372,8 +372,9 @@ for_window [app_id="(?i)blueman-manager"] floating enable, move position mouse, 
 for_window [app_id="(?i)gnome-calculator"] floating enable, move position mouse
 for_window [app_id="(?i)Nightly - Sharing Indicator"] floating enable, move position mouse
 
-# Do not allow screenlocking when firefox is fullscreen (ie. playing netflix)
-for_window [app_id="firefox"] inhibit_idle fullscreen
+# Inhibit Idle if a window is fullscreen
+for_window [class="^.*"] inhibit_idle fullscreen
+for_window [app_id="^.*"] inhibit_idle fullscreen
 
 ############################
 #------DEFAULTS-------------
