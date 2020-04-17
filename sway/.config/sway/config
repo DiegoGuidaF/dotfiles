@@ -38,6 +38,9 @@ set $screenlock playerctl -a pause && $HOME/bin/launch_swaylock
 # Script to take screenshots
 set $screenshot ~/.config/sway/scripts/screenshot.sh
 
+# Command used to show volume/brightness knob.
+set $wob_cmd wob -a top -W 200 -H 30 -o 2 -b 2 -M 0 --border-color "#FFfabd2f" --background-color "#ff282828" --bar-color "#ffd5c4a1"
+
 # Set some workspaces
 set $WSBROWSER  1.
 set $WSPERSONAL 2.
@@ -79,10 +82,16 @@ exec mako
 exec /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
 
 # Notify on network changes
-exec networkd-notify
+# Note, force kill since when sway is killed this process
+# doesn't die and gives trouble on sway restart
+exec pkill -f "networkd-notify" | networkd-notify
 
 # Night mode - Redden the screen as the daylight diminishes.
 exec launch_redshift.sh toggle
+
+# Create a tmp file as input for "wob".
+# This enables showing percentages on volume/brightness... changes
+exec mkfifo $SWAYSOCK.wob && tail -f $SWAYSOCK.wob | $wob_cmd
 
 
 # Set initial workspaces
@@ -199,14 +208,14 @@ bindsym XF86Calculator exec gnome-calculator
 bindsym XF86Keyboard  exec swaymsg input "2:7:SynPS/2_Synaptics_TouchPad" events toggle "disabled enabled"
 
 # Volume
-bindsym XF86AudioRaiseVolume exec pactl set-sink-volume @DEFAULT_SINK@ +5%
-bindsym XF86AudioLowerVolume exec pactl set-sink-volume @DEFAULT_SINK@ -5%
-bindsym XF86AudioMute exec pactl set-sink-mute @DEFAULT_SINK@ toggle
-bindsym XF86AudioMicMute exec pactl set-source-mute @DEFAULT_SOURCE@ toggle
+bindsym XF86AudioRaiseVolume exec pamixer -ui 2 && pamixer --get-volume > $SWAYSOCK.wob
+bindsym XF86AudioLowerVolume exec pamixer -ud 2 && pamixer --get-volume > $SWAYSOCK.wob
+bindsym XF86AudioMute exec pamixer --toggle-mute && ( pamixer --get-mute && echo 0 > $SWAYSOCK.wob ) || pamixer --get-volume > $SWAYSOCK.wob
+bindsym XF86AudioMicMute exec pamixer --default-source --toggle-mute &&( pamixer --default-source --get-mute && echo 0 > $SWAYSOCK.wob ) || pamixer --default-source --get-volume > $SWAYSOCK.wob
 
 # Screen brightness
-bindsym XF86MonBrightnessUp exec light -A 5
-bindsym XF86MonBrightnessDown exec light -U 5
+bindsym XF86MonBrightnessUp exec light -A 5 && light -G | cut -d'.' -f1 > $SWAYSOCK.wob
+bindsym XF86MonBrightnessDown exec light -U 5 && light -G | cut -d'.' -f1 > $SWAYSOCK.wob
 
 # Workspace rename
 bindsym $mod+Shift+r exec swaymsg -t get_workspaces -r | jq '.[].name' | launch_rofi.sh -dmenu | xargs swaymsg rename workspace to

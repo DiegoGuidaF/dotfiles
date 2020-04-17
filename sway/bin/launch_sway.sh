@@ -1,3 +1,3 @@
 #!/bin/bash
 
-exec sway 2>&1| systemd-cat -t sway -p info
+exec sway 2>&1 | systemd-cat -t sway -p info
