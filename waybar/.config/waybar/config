@@ -43,7 +43,7 @@
         }
     }, 
     "memory": {
-        "interval": 5,
+        "interval": 30,
         "format": "  {}%"
     },
     "battery": {
@@ -82,7 +82,7 @@
         "tooltip-format": ""
     },
     "pulseaudio": {
-        "scroll-step": 5,
+        "scroll-step": 2,
         "format": "{icon}{volume}%",
         "format-bluetooth": "{icon}{volume}%",
         "format-muted": "",
