@@ -99,8 +99,11 @@ if [ -n $WAYLAND_DISPLAY ]; then
     # To use your monitor's DPI instead of the default of 96 DPI:
     export QT_WAYLAND_FORCE_DPI=physical
 
+    export _JAVA_AWT_WM_NONREPARENTING=1
+
     # Force firefox to enable firefox
     export MOZ_ENABLE_WAYLAND=1
+
 fi
 
 # Skip compresion of makepkg for AUR packages, this saves

@@ -1,6 +1,4 @@
 #############
-# Variable  #
-#############
 # Logo key. Use Mod1 for Alt.
 set $mod Mod4
 
@@ -33,7 +31,7 @@ set $ws_controller ~/.config/sway/scripts/workspace.py
 
 # Command to lock screen: Pause playback and then launch script
 # that randomly selects a lockscreen picture.
-set $screenlock playerctl -a pause && $HOME/bin/launch_swaylock
+set $screenlock playerctl -a pause | $HOME/bin/launch_swaylock
 
 # Script to take screenshots
 set $screenshot ~/.config/sway/scripts/screenshot.sh
