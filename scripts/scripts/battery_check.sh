@@ -12,7 +12,7 @@ NOTIFY_SEND_CMD="notify-send -u critical -t 0 -a battery_check"
 # this way we only warn the first time.
 NOTIFY_CACHE_FILE="/tmp/battery_check_notified"
 
-echo $BATTINFO | grep -q "Discharging" || (echo "Battery is charging"; exit 1)
+echo $BATTINFO | grep -q "Discharging" || (echo "Battery is charging"; exit 0)
 
 # Validate and accept only numbers here.
 current_bat_level="$(echo $BATTINFO | grep -e "Discharging" -e "Battery $BATT_NUMBER" | grep -oe "[0-9]*%" | sed 's/%//g')"
