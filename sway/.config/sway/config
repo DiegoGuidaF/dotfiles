@@ -22,7 +22,7 @@ set $browser    firefox-nightly
 set $music      spotify
 # Launch nvim by default since it is useful
 # as a multiplexer (replacement of tmux)
-set $term       kitty nvim
+set $term       kitty nvim -c term
 
 # Your preferred application launcher
 # Note: it's recommended that you pass the final command to sway

@@ -19,6 +19,9 @@ ZSH_THEME="agnoster"
 # Uncomment the following line to disable bi-weekly auto-update checks.
 # DISABLE_AUTO_UPDATE="true"
 
+# Do not warn on oh-my-zsh update
+DISABLE_UPDATE_PROMPT=true
+
 # Uncomment the following line to change how often to auto-update (in days).
 # export UPDATE_ZSH_DAYS=13
 
@@ -37,7 +40,7 @@ ZSH_THEME="agnoster"
 # Uncomment the following line if you want to disable marking untracked files
 # under VCS as dirty. This makes repository status check for large repositories
 # much, much faster.
-# DISABLE_UNTRACKED_FILES_DIRTY="true"
+DISABLE_UNTRACKED_FILES_DIRTY="true"
 
 # Uncomment the following line if you want to change the command execution time
 # stamp shown in the history command output.
@@ -62,6 +65,8 @@ plugins=(
     docker
     docker-compose
     colored-man-pages
+    colorize
+    bgnotify
 )
 
 
