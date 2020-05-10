@@ -35,7 +35,7 @@
     },
     "cpu": {
         "interval": 5,
-        "format": " {usage}%",
+        "format": "{usage}%",
         "states": {
             "good": 10,
             "warning": 40,
@@ -44,12 +44,12 @@
     }, 
     "memory": {
         "interval": 30,
-        "format": "  {}%"
+        "format": " {}%"
     },
     "battery": {
         "format": "{icon} {capacity}%",
         "format-icons": ["", "", "", "", ""],
-        "format-charging": " {capacity}%",
+        "format-charging": "{capacity}%",
         // If battery is in the full state (from full until next state value)
         // hide it.
         "format-full": "",
@@ -65,13 +65,13 @@
     "network": {
         "interval": 60,
         "format": "Unknown",
-        "format-wifi": "{icon}({signalStrength}%)",
+        "format-wifi": "{icon} ({signalStrength}%)",
         "format-ethernet": "{icon}",
         "format-disconnected": "{icon}",
         "format-alt": "{ipaddr}/{cidr} {icon}",
         "format-icons": {
-            "wifi": [" "],
-            "ethernet": [" "],
+            "wifi": [""],
+            "ethernet": [""],
             "disconnected": ["睊"]
         },
         "max-length": 20,
@@ -83,17 +83,17 @@
     },
     "pulseaudio": {
         "scroll-step": 2,
-        "format": "{icon}{volume}%",
+        "format": "{icon} {volume}%",
         "format-bluetooth": "{icon}{volume}%",
         "format-muted": "",
         "format-icons": {
-            "headphones": " ",
-            "handsfree": " ",
-            "headset": " ",
-            "phone": [" "],
-            "portable": " ",
-            "car": " ",
-            "default": ["  ", "  ", "墳 ", "  "]
+            "headphones": "",
+            "handsfree": "",
+            "headset": "",
+            "phone": [""],
+            "portable": "",
+            "car": "",
+            "default": ["", "", ""]
         },
         "on-click": "pactl set-sink-mute @DEFAULT_SINK@ toggle",
         "on-click-right": "pavucontrol",
@@ -112,16 +112,16 @@
      "temperature": {
         "interval": 5,
         "critical-threshold": 80,
-        "format-critical": " {temperatureC}°C",
-        "format": " {temperatureC}°C"
+        "format-critical": "{temperatureC}°C",
+        "format": "{temperatureC}°C"
     },
     "custom/media": {
         "format": "{icon} {}",
         "return-type": "json",
         "max-length": 40,
         "format-icons": {
-            "spotify": " ",
-            "default": "🎜 "
+            "spotify": "",
+            "default": "🎜"
         },
         "escape": true,
         "exec": "$HOME/.config/waybar/scripts/mediaplayer.py --player spotify 2> /dev/null",
@@ -129,7 +129,7 @@
         "tooltip": false
     },
   "custom/pacman": {
-        "format": " {}",
+        "format": "{}",
         "interval": 3600,
         // Show update number, empty if none found so element is hidden.
         "exec": "checkupdates | wc -l |sed 's/^0$//g'",
@@ -138,13 +138,12 @@
   "custom/redshift": {
         "format": "{icon}",
         "return-type": "json",
-        "interval": 30,
         "exec": "$HOME/bin/launch_redshift.sh status",
         "signal": 8,
         "on-click": "launch_redshift.sh toggle && pkill -RTMIN+8 waybar",
         "format-icons": {
-            "active": " ",
-            "inactive": " "
+            "active": "",
+            "inactive": ""
         },
         "tooltip": false
     }
