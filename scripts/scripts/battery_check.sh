@@ -6,14 +6,31 @@ readonly BAT_LVL_WARN=15
 readonly BAT_LVL_CRITICAL=3
 readonly BATT_NUMBER=0
 
-BATTINFO=`acpi -b | grep "Battery $BATT_NUMBER"`
-NOTIFY_SEND_CMD="notify-send -u critical -t 0 -a battery_check"
+#BUG on battery name, it keeps changing!
+readonly BATTINFO_FULL=`acpi -b`
+echo -e "BATTERY_DEBUG:\n$BATTINFO_FULL"
+readonly BATTINFO=$(echo $BATTINFO_FULL| grep "Battery $BATT_NUMBER")
+readonly NOTIFY_SEND_CMD="notify-send -u critical -t 0 -a battery_check"
 # File used to check if we have already warned about low battery,
 # this way we only warn the first time.
-NOTIFY_CACHE_FILE="/tmp/battery_check_notified"
+readonly NOTIFY_CACHE_FILE="/tmp/battery_check_notified"
 
-echo $BATTINFO | grep -q "Discharging" || (echo "Battery is charging"; exit 0)
+case $(echo $BATTINFO | awk '{print $3}' | sed s/,//) in
+    "Charging")
+        echo "Battery is charging, not doing anything..."
+        exit 0
+        ;;
+    "Discharging")
+        echo "Battery is Discharging"
+        ;;
+    *)
+        echo "Battery Unknown state!"
+        echo $BATTINFO
+        ;;
 
+esac
+
+exit 0
 # Validate and accept only numbers here.
 current_bat_level="$(echo $BATTINFO | grep -e "Discharging" -e "Battery $BATT_NUMBER" | grep -oe "[0-9]*%" | sed 's/%//g')"
 echo "Battery level is at $current_bat_level. Warn/Crit - $BAT_LVL_WARN/$BAT_LVL_CRITICAL"
