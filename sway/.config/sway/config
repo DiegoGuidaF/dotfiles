@@ -175,6 +175,9 @@ exec swayidle -w \
            resume 'swaymsg "output * dpms on"' \
          before-sleep '$screenlock -f'
 
+# Hide cursor when not in use
+seat seat0 hide_cursor 3000
+
 # Touchpad configuration
 input "2:7:SynPS/2_Synaptics_TouchPad" {
     #Disable while typing
@@ -370,7 +373,7 @@ for_window [app_id="(?i)pavucontrol"] floating enable
 for_window [app_id="(?i)blueman-manager"] floating enable, move position mouse, move down $height px
 
 for_window [app_id="(?i)gnome-calculator"] floating enable, move position mouse
-for_window [app_id="(?i)Nightly - Sharing Indicator"] floating enable, move position mouse
+for_window [title="(?i)Sharing Indicator"] floating enable, move position mouse
 
 # Inhibit Idle if a window is fullscreen
 for_window [class="^.*"] inhibit_idle fullscreen
