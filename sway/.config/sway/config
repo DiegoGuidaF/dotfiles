@@ -361,8 +361,8 @@ for_window [class="(?i).py"] floating enable, move position mouse
 for_window [class="Spotify"] mark "music", floating enable, move scratchpad
 
 assign [class="(?i)Steam"] workspace $WSSTEAM
-assign [class="(?i)Steam" title="(?i)Friends List"] floating enable, workspace $WSSTEAM
-assign [class="(?i)Steam" title="(?i)Steam - News"] floating enable, workspace $WSSTEAM
+for_window [class="(?i)Steam" title="(?i)Friends List"] floating enable, workspace $WSSTEAM
+for_window [class="(?i)Steam" title="Steam - News.*"] floating enable, workspace $WSSTEAM
 
 # Config dialog for Android Studio import 
 for_window [instance="sun-awt-X11-XDialogPeer"] floating enable
