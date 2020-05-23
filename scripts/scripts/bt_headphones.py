@@ -82,7 +82,7 @@ class BluetoothHandler(btle.DefaultDelegate):
 
     def get_device_property(self, prop_name):
         prop_value = self.device_props_iface.Get("org.bluez.Device1",prop_name)
-        logger.debug(f"Property value is: {prop_value}")
+        logger.debug(f"Property {prop_name} value is: {prop_value}")
         return prop_value
 
     def subscribe_properties_changed(self):
@@ -122,9 +122,29 @@ class BluetoothHandler(btle.DefaultDelegate):
 
     def print_status(self):
         logger.info('Writing changes to console')
-    
-        output = {'text': f"{self.is_connected}-{self.battery}%",
-                  'class': 'custom-bt-headphone'}
+        output = {}
+        if self.is_connected:
+            icon = ""
+            #Only send percentage is connected and available
+            if self.battery != -1:
+                output["percentage"] = self.battery
+        else:
+            icon = ""
+        
+        output["text"] = icon
+
+        if "percentage" in output:
+            if self.battery >= 60:
+                bat_status = "good"
+            elif self.battery >= 30:
+                bat_status = "warning"
+            else:
+                bat_status = "critical"
+        else:
+            bat_status = "unknown"
+
+        output["class"] = f"bat-{bat_status}"
+                
         logger.debug(json.dumps(output))
     
         sys.stdout.write(json.dumps(output) + '\n')
@@ -134,7 +154,7 @@ class BluetoothHandler(btle.DefaultDelegate):
         logger.debug("Received notification from BLE")
         if cHandle == 45:
             new_bat = ord(data)
-            logger.info(f"Received battery update, {new_bat}%")
+            logger.info(f"Received battery update, new: {new_bat}% - old: {self.battery}")
             if self.battery != new_bat:
                 self.battery = new_bat
                 self.print_status()
@@ -179,6 +199,7 @@ def main():
     bt_handler = BluetoothHandler(bus, arguments.address)
     loop = GLib.MainLoop()
     signal.signal(signal.SIGINT, partial(sigint_handler, loop))
+    signal.signal(signal.SIGTERM, partial(sigint_handler, loop))
 
     if arguments.toggle:
         logger.info("Toggling bluetooth state")
@@ -197,11 +218,8 @@ def main():
 
 def sigint_handler(loop,sig, frame):
     logger.info(f"Received signal {sig}")
-    if sig == signal.SIGINT:
-        logger.info("Interrupt, stopping service")
-        loop.quit()
-    else:
-        raise ValueError("Undefined handler for '{}'".format(sig))
+    logger.info("Interrupt, stopping service")
+    loop.quit()
 
 if __name__ == "__main__":
     main()
