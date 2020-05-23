@@ -22,6 +22,7 @@
 #custom-media,
 #custom-pacman,
 #custom-redshift
+#custom-btheadphones
 {
     background-color: @background;
     padding: 0 5px;
@@ -99,6 +100,13 @@
 
 #custom-media.custom-spotify {
     color: @color2;
+}
+
+#custom-btheadphones.bat-warning {
+    color: @color3;
+}
+#custom-btheadphones.bat-critical {
+    color: @color1;
 }
 
 /* IDEA: Instead of using a separate icon,

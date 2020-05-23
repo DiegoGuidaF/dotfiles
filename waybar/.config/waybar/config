@@ -6,7 +6,7 @@
 
     // Choose the order of the modules
     "modules-left": ["sway/workspaces", "sway/mode"],
-    "modules-center": ["custom/pacman", "temperature", "cpu", "memory","pulseaudio", "network", "battery", "backlight", "custom/redshift"],
+    "modules-center": ["custom/pacman", "temperature", "cpu", "memory","pulseaudio", "network", "battery", "backlight", "custom/redshift", "custom/btheadphones"],
     "modules-right": ["custom/media", "clock", "tray"],
 
     // Modules configuration
@@ -35,7 +35,7 @@
     },
     "cpu": {
         "interval": 5,
-        "format": "{usage}%",
+        "format": " {usage}%",
         "states": {
             "good": 10,
             "warning": 40,
@@ -44,7 +44,7 @@
     }, 
     "memory": {
         "interval": 30,
-        "format": " {}%"
+        "format": " {}%"
     },
     "battery": {
         "format": "{icon} {capacity}%",
@@ -112,8 +112,8 @@
      "temperature": {
         "interval": 5,
         "critical-threshold": 80,
-        "format-critical": "{temperatureC}°C",
-        "format": "{temperatureC}°C"
+        "format-critical": " {temperatureC}°C",
+        "format": " {temperatureC}°C"
     },
     "custom/media": {
         "format": "{icon} {}",
@@ -129,14 +129,14 @@
         "tooltip": false
     },
   "custom/pacman": {
-        "format": "{}",
+        "format": " {}",
         "interval": 3600,
         // Show update number, empty if none found so element is hidden.
         "exec": "checkupdates | wc -l |sed 's/^0$//g'",
         "exec-if": "ping -c 1 8.8.8.8"
     },
   "custom/redshift": {
-        "format": "{icon}",
+        "format": "{icon} ",
         "return-type": "json",
         "exec": "$HOME/bin/launch_redshift.sh status",
         "signal": 8,
@@ -146,5 +146,45 @@
             "inactive": ""
         },
         "tooltip": false
+    },
+    "custom/btheadphones": {
+        "format": "{}{icon}  ",
+        "return-type": "json",
+        "max-length": 40,
+        "format-icons": [
+            "",
+            "",
+            "",
+            "",
+            ""
+        ],
+        "escape": true,
+        "exec": "$HOME/scripts/bt_headphones.py 00:1B:66:C1:83:4A --listen -vvvv",
+        "on-click": "$HOME/scripts/bt_headphones.py 00:1B:66:C1:83:4A --toggle",
+        "tooltip": true,
+        "states": {
+            "full": 100,
+            "good": 95,
+            "warning": 30,
+            "critical": 10
+        },
+        "tooltip-format": "{percentage}"
+
     }
 }
+//        "tooltip-format-ethernet": "{ipaddr}/{cidr}\n{bandwidthUpBits}/{bandwidthDownBits}",
+//        
+//        
+//        
+//        
+//        
+//        
+//        
+//        
+//        
+//        
+//        
+//        
+//        
+//        
+//        
