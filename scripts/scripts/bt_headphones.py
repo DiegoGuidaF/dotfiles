@@ -3,15 +3,13 @@ import signal
 import dbus
 from gi.repository import GLib
 from dbus.mainloop.glib import DBusGMainLoop
-from bluetooth.ble import GATTRequester
 from bluepy import btle
-import subprocess
 import argparse
 import logging
 import json
 import sys
-import time
 import threading
+from functools import partial
 
 logger = logging.getLogger(__name__)
 
@@ -21,10 +19,9 @@ class BluetoothHandler(btle.DefaultDelegate):
     def __init__(self, bus, address):
         btle.DefaultDelegate.__init__(self)
         self.address = address
+        self.bus = bus
         self.address_dbus = address.replace(":","_")
         self.battery = -1
-        self.bus = bus
-        self.ble_requester = GATTRequester(address, False)
         self.device_object = bus.get_object('org.bluez',
                        f'/org/bluez/hci0/dev_{self.address_dbus}')
         # Interface for interacting with the device (connect, disconnect...)
@@ -36,10 +33,17 @@ class BluetoothHandler(btle.DefaultDelegate):
             dbus_interface='org.freedesktop.DBus.Properties')
         logger.debug(f"{self.device_object}")
 
-        self.subscribe_properties_changed()
         self.is_connected = self.get_device_property("Connected")
-        self.print_status()
 
+    def toggle_connection(self):
+        if not self.is_connected:
+            self.connect()
+        else:
+            self.disconnect()
+
+    def start_listen_loop(self):
+        self.subscribe_properties_changed()
+        self.print_status()
         # Setup read battery updates loop
         if self.is_connected:
             self.start_read_battery_thread()
@@ -58,17 +62,23 @@ class BluetoothHandler(btle.DefaultDelegate):
         has_changes = False
 
         if "Connected" in response["properties"]:
-            self.on_connection_changed(bool(response["properties"]["Connected"]))
-            has_changes = True
+            has_changes = self.on_connection_changed(bool(response["properties"]["Connected"]))
 
         if has_changes:
             self.print_status()
 
     def on_connection_changed(self, is_connected):
-        self.is_connected = is_connected
-        logger.info(f"Connection status changed to {self.is_connected}")
-        if is_connected:
-            self.start_read_battery_thread()
+        has_changes = False
+        # Only process is status is different than previous
+        if self.is_connected != is_connected:
+            has_changes = True
+            self.is_connected = is_connected
+            logger.info(f"Connection status changed to {self.is_connected}")
+            # If connection is on, start listening for battery updates
+            if is_connected:
+                self.start_read_battery_thread()
+
+        return has_changes
 
     def get_device_property(self, prop_name):
         prop_value = self.device_props_iface.Get("org.bluez.Device1",prop_name)
@@ -77,13 +87,9 @@ class BluetoothHandler(btle.DefaultDelegate):
 
     def subscribe_properties_changed(self):
         logger.info("Subscribing to property changes")
-        #self.device_iface.connect_to_signal("PropertiesChanged",self.properties_changed_handler)
         self.bus.add_signal_receiver(self.properties_changed_handler,
             bus_name='org.bluez',
-            #interface_keyword='interface',
-            #member_keyword='member',
             path_keyword='path',
-            #message_keyword='msg',
             signal_name="PropertiesChanged")
 
     def connect(self):
@@ -92,45 +98,27 @@ class BluetoothHandler(btle.DefaultDelegate):
         else:
             logger.info("Already connected to device")
 
+    def disconnect(self):
+        if self.is_connected:
+            self.device_iface.Disconnect()
+        else:
+            logger.info("No device to disconnect")
+
     def battery_notifications_loop(self):
         logger.info("--Starting battery notification handler...")
-        p = btle.Peripheral(self.address)
-        p.setDelegate(self)
+        self.btle_dev = btle.Peripheral(self.address)
+        self.btle_dev.setDelegate(self)
 
         logger.info("Listening for battery notifications")
         while self.is_connected:
             try:
-                p.waitForNotifications(5)
+                self.btle_dev.waitForNotifications(5)
             except Exception as e:
                 logger.error(f"Error while waiting for bat. notification {e}")
                 pass
 
         logger.info("--Stopped listening for battery notifications")
-        p.disconnect()
-
-#    def read_device_battery(self):
-#        logger.debug("Reading battery status...")
-#        #self.ble_requester = GATTRequester(self.address, True)
-#        #try:
-#        self.ble_requester.connect(False)
-#        while not self.ble_requester.is_connected():
-#            time.sleep(0.5)
-
-        #except RuntimeError:
-        #    # Ignore, only given since the script isn't ran with privileges, however
-        #    # they are not required and this can be safely ignored.
-        #    logger.debug("Ignoring Runtime exception launched on Connect...")
-        #    pass
-
-#        self.battery = ord(self.ble_requester.read_by_uuid(self.BATTERY_UUID)[0])
-#        logger.info(f"Battery is at: {self.battery}%")
-#
-#        try:
-#            self.ble_requester.disconnect()
-#        except Exception:
-#            logger.debug("Exception")
-#
-#        return True
+        self.btle_dev.disconnect()
 
     def print_status(self):
         logger.info('Writing changes to console')
@@ -155,14 +143,11 @@ class BluetoothHandler(btle.DefaultDelegate):
             logger.debug(f"Handle: {cHandle}")
             logger.debug(f"Data: {ord(data)}")
 
-#    def periodic_battery_update(self, time_interval_sec):
-#        GLib.idle_add(self.read_device_battery, i)
-#        logger.debug(f"Scheduling battery update each {time_interval_sec}seconds")
-#        bat_thread = threading.Timer(time_interval_sec,self.read_device_battery)
-#        bat_thread.daemon = True
-#
-#        bat_thread.start()
-#                GLib.idle_add(lambda: next(gen, False), priority=GLib.PRIORITY_LOW)
+    def stop(self):
+        try:
+            self.btle_dev.disconnect()
+        except Exception:
+            pass
 
 def parse_arguments():
     parser = argparse.ArgumentParser()
@@ -170,8 +155,10 @@ def parse_arguments():
     # Increase verbosity with every occurance of -v
     parser.add_argument('-v', '--verbose', action='count', default=0)
 
+    parser.add_argument('--listen', action='store_true', help="Listen for connectivity and battery changes")
+    parser.add_argument('--toggle', action='store_true', help="Toggle bluetooth connection")
+
     # Define for which player we're listening
-    #parser.add_argument('address')
     parser.add_argument('address', metavar='addr', type=str,
                     help='Bluetooth address of the headphones.')
 
@@ -180,7 +167,6 @@ def parse_arguments():
 
 def main():
     DBusGMainLoop(set_as_default=True)
-    signal.signal(signal.SIGINT, sigint_handler)
     bus = dbus.SystemBus()
     arguments = parse_arguments()
     # Initialize logging
@@ -191,16 +177,29 @@ def main():
     logger.setLevel(max((3 - arguments.verbose) * 10, 0))
 
     bt_handler = BluetoothHandler(bus, arguments.address)
-
     loop = GLib.MainLoop()
+    signal.signal(signal.SIGINT, partial(sigint_handler, loop))
 
-    logger.info("Starting main loop...")
-    loop.run()
+    if arguments.toggle:
+        logger.info("Toggling bluetooth state")
+        bt_handler.toggle_connection()
+
+    if arguments.listen:
+        logger.info("Listening to battery and connection events...")
+        bt_handler.start_listen_loop()
+        logger.info("Starting main loop...")
+        loop.run()
+
+    bt_handler.stop()
+    bus.close()
+    logger.info("Finished")
 
 
-def sigint_handler(sig, frame):
+def sigint_handler(loop,sig, frame):
+    logger.info(f"Received signal {sig}")
     if sig == signal.SIGINT:
-        sys.exit(1)
+        logger.info("Interrupt, stopping service")
+        loop.quit()
     else:
         raise ValueError("Undefined handler for '{}'".format(sig))
 
