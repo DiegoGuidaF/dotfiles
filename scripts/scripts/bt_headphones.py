@@ -10,8 +10,10 @@ import json
 import sys
 import threading
 from functools import partial
+import os
 
 logger = logging.getLogger(__name__)
+SCRIPT_NAME = "bt-headphones"
 
 class BluetoothHandler(btle.DefaultDelegate):
     BATTERY_UUID="00002a19-0000-1000-8000-00805f9b34fb"
@@ -185,7 +187,41 @@ def parse_arguments():
 
     return parser.parse_args()
 
+def ensure_one_instance(script_name):
+    """ Ensure there's only one instance of this script running.
+        If another instance already running, kill it.
+    """
+    #script_name = f'{__file__}'.rstrip('.py').lstrip('./')
+    pid_file = f'{os.getenv("XDG_RUNTIME_DIR")}/{script_name}.pid'
+
+    #This is to check if there is already a lock file existing#
+    if os.access(pid_file, os.F_OK):
+        logger.info("PID file already exists")
+        #if the lockfile is already there then check the PID number 
+        #in the lock file
+        with open(pid_file, "r") as pf:
+            pf.seek(0)
+            old_pid_num = pf.readline()
+            # Now we check the PID from lock file matches to the current
+            # process PID
+            if os.path.exists(f"/proc/{old_pid_num}"):
+                logger.debug("You already have an instance of the program running")
+                logger.debug("It is running as process %s" % old_pid_num)
+                logger.info("Killing it..")
+                # Kill process!
+                os.kill(int(old_pid_num), signal.SIGTERM)
+            else:
+                logger.info("File is there but the program is not running")
+                logger.debug ("Removing lock file for the: %s as it can be there because of the program last time it was run" % old_pid_num)
+        os.remove(pid_file)
+
+    #Save current PID into file
+    with open(pid_file, "w") as pf:
+        pf.write("%s" % os.getpid())
+
 def main():
+    ensure_one_instance(SCRIPT_NAME)
+
     DBusGMainLoop(set_as_default=True)
     bus = dbus.SystemBus()
     arguments = parse_arguments()
