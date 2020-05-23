@@ -109,7 +109,7 @@ def ensure_one_instance():
                 logger.debug("It is running as process %s" % old_pid_num)
                 logger.info("Killing it..")
                 # Kill process!
-                os.kill(int(old_pid_num), signal.SIGKILL)
+                os.kill(int(old_pid_num), signal.SIGTERM)
             else:
                 logger.info("File is there but the program is not running")
                 logger.debug ("Removing lock file for the: %s as it can be there because of the program last time it was run" % old_pid_num)
