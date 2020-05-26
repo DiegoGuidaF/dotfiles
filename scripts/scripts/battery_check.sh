@@ -4,12 +4,15 @@ set -e
 
 readonly BAT_LVL_WARN=15
 readonly BAT_LVL_CRITICAL=3
-readonly BATT_NUMBER=0
 
-#BUG on battery name, it keeps changing!
 readonly BATTINFO_FULL=`acpi -b`
 echo -e "BATTERY_DEBUG:\n$BATTINFO_FULL"
-readonly BATTINFO=$(echo $BATTINFO_FULL| grep "Battery $BATT_NUMBER")
+
+# System keeps adding a Battery 1 seemingly randomly, so that sometimes
+# we have two batteries reported by "acpi -b". Only way to know
+# which one is the correct one is by grepping the "remaining" key word
+# since it seems to only be reported by the valid one.
+readonly BATTINFO=$(echo "$BATTINFO_FULL"| grep "remaining")
 readonly NOTIFY_SEND_CMD="notify-send -u critical -t 0 -a battery_check"
 # File used to check if we have already warned about low battery,
 # this way we only warn the first time.
@@ -30,10 +33,9 @@ case $(echo $BATTINFO | awk '{print $3}' | sed s/,//) in
 
 esac
 
-exit 0
 # Validate and accept only numbers here.
 current_bat_level="$(echo $BATTINFO | grep -e "Discharging" -e "Battery $BATT_NUMBER" | grep -oe "[0-9]*%" | sed 's/%//g')"
-echo "Battery level is at $current_bat_level. Warn/Crit - $BAT_LVL_WARN/$BAT_LVL_CRITICAL"
+echo "Battery level is at "$current_bat_level". Warn/Crit - $BAT_LVL_WARN/$BAT_LVL_CRITICAL"
 
 if [ -z "$current_bat_level" ]; then
     echo "Invalid battery level received, acpi reported: $BATTINFO"
