@@ -136,7 +136,7 @@
         "exec-if": "ping -c 1 8.8.8.8"
     },
   "custom/redshift": {
-        "format": "{icon} ",
+        "format": "{icon}",
         "return-type": "json",
         "exec": "$HOME/bin/launch_redshift.sh status",
         "signal": 8,
@@ -147,10 +147,12 @@
         },
         "tooltip": false
     },
+
     "custom/btheadphones": {
-        "format": "{}{icon}  ",
+        "format": "{}",
         "return-type": "json",
         "max-length": 40,
+        // Icons currently not used since colors are better
         "format-icons": [
             "",
             "",
@@ -159,20 +161,12 @@
             ""
         ],
         "escape": true,
-        "exec": "$HOME/scripts/bt_headphones.py 00:1B:66:C1:83:4A --listen -vvvv",
+        "exec": "$HOME/scripts/bt_headphones.py 00:1B:66:C1:83:4A --listen -vvv",
         "on-click": "$HOME/scripts/bt_headphones.py 00:1B:66:C1:83:4A --toggle",
-        "tooltip": true,
-        "states": {
-            "full": 100,
-            "good": 95,
-            "warning": 30,
-            "critical": 10
-        },
-        "tooltip-format": "{percentage}"
-
+        "on-click-right": "$HOME/scripts/bt_headphones.py 00:1B:66:C1:83:4A --power-off",
+        "tooltip": true
     }
 }
-//        "tooltip-format-ethernet": "{ipaddr}/{cidr}\n{bandwidthUpBits}/{bandwidthDownBits}",
 //        
 //        
 //        

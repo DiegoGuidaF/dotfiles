@@ -21,7 +21,7 @@
 #temperature,
 #custom-media,
 #custom-pacman,
-#custom-redshift
+#custom-redshift,
 #custom-btheadphones
 {
     background-color: @background;
@@ -34,7 +34,7 @@
 #workspaces button:hover {
     background: @background;
     box-shadow: inherit;
-    border-bottom: 3px solid #ffffff;
+    border-bottom: 1px solid #ffffff;
 }
 
 
@@ -102,12 +102,32 @@
     color: @color2;
 }
 
+#custom-btheadphones.bat-good {
+    color: @color2;
+}
+
 #custom-btheadphones.bat-warning {
     color: @color3;
 }
+
 #custom-btheadphones.bat-critical {
     color: @color1;
 }
+
+#custom-btheadphones.bat-unknown {
+    color: @color6;
+}
+
+#custom-btheadphones.blocked {
+    color: @color1;
+}
+
+/*
+ * Available but unset
+#custom-btheadphones.disconnected {
+}
+*/
+
 
 /* IDEA: Instead of using a separate icon,
  * use same as for backlight control and make it change
