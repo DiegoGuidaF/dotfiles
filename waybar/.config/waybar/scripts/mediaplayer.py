@@ -8,6 +8,7 @@ import json
 import os
 gi.require_version('Playerctl', '2.0')
 from gi.repository import Playerctl, GLib
+from functools import partial
 
 logger = logging.getLogger(__name__)
 
@@ -67,11 +68,11 @@ def init_player(manager, name):
     on_metadata(player, player.props.metadata, manager)
 
 
-def signal_handler(sig, frame):
+def signal_handler(loop, sig, frame):
     logger.debug('Received signal to stop, exiting')
     sys.stdout.write('\n')
     sys.stdout.flush()
-    # loop.quit()
+    loop.quit()
     sys.exit(0)
 
 
@@ -140,8 +141,8 @@ def main():
     manager.connect('name-appeared', lambda *args: on_player_appeared(*args, arguments.player))
     manager.connect('player-vanished', on_player_vanished)
 
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
+    signal.signal(signal.SIGINT, partial(signal_handler, loop))
+    signal.signal(signal.SIGTERM, partial(signal_handler, loop))
 
     for player in manager.props.player_names:
         if arguments.player is not None and arguments.player != player.name:
@@ -153,7 +154,6 @@ def main():
         init_player(manager, player)
 
     loop.run()
-
 
 if __name__ == '__main__':
     main()
