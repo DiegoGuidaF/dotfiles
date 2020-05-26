@@ -11,12 +11,21 @@ import sys
 import threading
 from functools import partial
 import os
+import subprocess
+import time
 
 logger = logging.getLogger(__name__)
 SCRIPT_NAME = "bt-headphones"
 
+ADAPTER_NAME = "hci0"
+ADAPTER_FULL_NAME = "/org/bluez/" + ADAPTER_NAME
+BUS_NAME = 'org.bluez'
+ADAPTER_INTERFACE = BUS_NAME + '.Adapter1'
+DEVICE_INTERFACE = BUS_NAME + '.Device1'
+
+BATTERY_LEVEL_HANDLER=0x002d
+
 class BluetoothHandler(btle.DefaultDelegate):
-    BATTERY_UUID="00002a19-0000-1000-8000-00805f9b34fb"
 
     def __init__(self, bus, address):
         btle.DefaultDelegate.__init__(self)
@@ -24,18 +33,39 @@ class BluetoothHandler(btle.DefaultDelegate):
         self.bus = bus
         self.address_dbus = address.replace(":","_")
         self.battery = -1
-        self.device_object = bus.get_object('org.bluez',
+        # Interface for interacting with the adapter
+        self.adapter_object = bus.get_object(BUS_NAME,
+                       '/org/bluez/hci0')
+        self.adapter_props_iface = dbus.Interface(self.adapter_object,
+            dbus_interface='org.freedesktop.DBus.Properties')
+
+        self.device_object = bus.get_object(BUS_NAME,
                        f'/org/bluez/hci0/dev_{self.address_dbus}')
         # Interface for interacting with the device (connect, disconnect...)
         self.device_iface = dbus.Interface(self.device_object,
-            dbus_interface='org.bluez.Device1')
+            dbus_interface=DEVICE_INTERFACE)
         
         # Interface for querying properties
         self.device_props_iface = dbus.Interface(self.device_object,
             dbus_interface='org.freedesktop.DBus.Properties')
-        logger.debug(f"{self.device_object}")
 
-        self.is_connected = self.get_device_property("Connected")
+        try:
+            self.is_connected = self.get_device_property("Connected")
+            self.is_adapter_blocked = False
+        except dbus.exceptions.DBusException:
+            logger.debug("Adapter is blocked")
+            self.is_adapter_blocked = True
+            self.is_connected = False
+
+    def get_adapter_property(self, prop_name):
+        prop_value = self.adapter_props_iface.Get(ADAPTER_INTERFACE, prop_name)
+        logger.debug(f"Adapter property {prop_name} value is: {prop_value}")
+        return prop_value
+
+    def set_adapter_property(self, prop_name, value):
+        prop_value = self.adapter_props_iface.Set(ADAPTER_INTERFACE, prop_name, value)
+        logger.debug(f"Adapter property {prop_name} set to {value}")
+        return prop_value
 
     def toggle_connection(self):
         if not self.is_connected:
@@ -44,7 +74,7 @@ class BluetoothHandler(btle.DefaultDelegate):
             self.disconnect()
 
     def start_listen_loop(self):
-        self.subscribe_properties_changed()
+        self.subscribe_to_dbus_signals()
         self.print_status()
         # Setup read battery updates loop
         if self.is_connected:
@@ -63,10 +93,32 @@ class BluetoothHandler(btle.DefaultDelegate):
         logger.debug(f"Received new event: {json.dumps(response)}")
         has_changes = False
 
-        if "Connected" in response["properties"]:
+        if interface == DEVICE_INTERFACE and "Connected" in response["properties"]:
             has_changes = self.on_connection_changed(bool(response["properties"]["Connected"]))
 
         if has_changes:
+            self.print_status()
+
+    def interfaces_added_handler(self, interface, props, **kw):
+        response = {}
+        response['event'] = "InterfaceAdded"
+        response['interfaces'] = interface
+        response["properties"] = props
+
+        if interface == ADAPTER_FULL_NAME:
+            logger.info(f"Adapter {ADAPTER_NAME} unblocked")
+            self.is_adapter_blocked = False
+            self.print_status()
+
+    def interfaces_removed_handler(self, interface, props, **kw):
+        response = {}
+        response['event'] = "InterfaceRemoved"
+        response['interfaces'] = interface
+        response["properties"] = props
+
+        if interface == ADAPTER_FULL_NAME:
+            logger.info(f"Adapter {ADAPTER_NAME} blocked")
+            self.is_adapter_blocked = True
             self.print_status()
 
     def on_connection_changed(self, is_connected):
@@ -83,32 +135,115 @@ class BluetoothHandler(btle.DefaultDelegate):
         return has_changes
 
     def get_device_property(self, prop_name):
-        prop_value = self.device_props_iface.Get("org.bluez.Device1",prop_name)
-        logger.debug(f"Property {prop_name} value is: {prop_value}")
+        prop_value = self.device_props_iface.Get(DEVICE_INTERFACE,prop_name)
+        logger.debug(f"Device property {prop_name} value is: {prop_value}")
         return prop_value
 
-    def subscribe_properties_changed(self):
-        logger.info("Subscribing to property changes")
+    def subscribe_to_dbus_signals(self):
+        logger.debug("Subscribing to property changes")
         self.bus.add_signal_receiver(self.properties_changed_handler,
-            bus_name='org.bluez',
+            bus_name=BUS_NAME,
             path_keyword='path',
             signal_name="PropertiesChanged")
 
+        logger.debug("Subscribing to interfaces added")
+        self.bus.add_signal_receiver(self.interfaces_added_handler,
+            bus_name=BUS_NAME,
+            path_keyword='path',
+            signal_name="InterfacesAdded")
+
+        logger.debug("Subscribing to interfaces removed")
+        self.bus.add_signal_receiver(self.interfaces_removed_handler,
+            bus_name=BUS_NAME,
+            path_keyword='path',
+            signal_name="InterfacesRemoved")
+
+    def power_off(self,block_on_power_off=False):
+        is_powered = self.get_power_status()
+
+        if not self.is_adapter_blocked:
+            # First turn adapter off
+            if is_powered:
+                logger.info("Turning adapter off")
+                self.set_adapter_property("Powered",dbus.Boolean(False))
+            # Block it if requested, parameter exists since this asks for password via a Dialog,
+            # so sometimes it might be skipped.
+            if block_on_power_off:
+                logger.debug("Blocking adapter")
+                ret = subprocess.check_call(["pkexec","rfkill","block","bluetooth"])
+                if ret != 0:
+                    logger.error("Failed unblocking adapter")
+                    return
+                # Wait for the adapter to turn on
+                while not self.is_adapter_blocked:
+                    time.sleep(0.5)
+                    self.get_power_status()
+
+    def get_power_status(self):
+        try:
+            is_powered = self.get_adapter_property("Powered")
+            self.is_adapter_blocked = False
+        except dbus.exceptions.DBusException:
+            logger.debug("Adapter is blocked")
+            is_powered = False
+            self.is_adapter_blocked = True
+
+        return is_powered
+
+    def power_on(self):
+        """ Power on/off the bluetooth.
+            Also block/unblock via rfkill since currently bluetooth
+            is only used for the headphones.
+        """
+        # Check current adapter status
+        is_powered = self.get_power_status()
+
+        if not is_powered:
+            if self.is_adapter_blocked:
+                logger.debug("Unblocking adapter")
+                ret = subprocess.check_call(["pkexec","rfkill","unblock","bluetooth"])
+                if ret != 0:
+                    logger.error("Failed unblocking adapter")
+                    raise Exception
+                # Wait for the device to turn on
+                while self.is_adapter_blocked:
+                    time.sleep(0.5)
+                    is_powered = self.get_power_status()
+            
+            # It might be already powered on during init depending on bluetooth configuration
+            if not is_powered:
+                logger.info("Turning adapter on")
+                self.set_adapter_property("Powered",dbus.Boolean(True))
+
+        else:
+            logger.info("Bluetooth already in the desired state")
+        
     def connect(self):
+        # Ensure adapter is powered on
+        self.power_on()
+
         if not self.is_connected:
+            logger.info(f"Connecting to device {self.address}")
             self.device_iface.Connect()
         else:
-            logger.info("Already connected to device")
+            logger.info(f"Already connected to device {self.address}")
 
     def disconnect(self):
         if self.is_connected:
+            logger.info(f"Disconnecting from device {self.address}")
             self.device_iface.Disconnect()
         else:
             logger.info("No device to disconnect")
+        # Power off the adapter
+        self.power_off()
 
     def battery_notifications_loop(self):
         logger.info("--Starting battery notification handler...")
-        self.btle_dev = btle.Peripheral(self.address)
+        try:
+            self.btle_dev = btle.Peripheral(self.address)
+        except btle.BTLEDisconnectError:
+            logger.error("Failed connecting to BTLE, retrying...")
+            self.btle_dev = btle.Peripheral(self.address)
         self.btle_dev.setDelegate(self)
 
         logger.info("Listening for battery notifications")
@@ -127,25 +262,38 @@ class BluetoothHandler(btle.DefaultDelegate):
         output = {}
         if self.is_connected:
             icon = ""
+            status = "bat-"
+            output["tooltip"] = f"Connected - Battery:  {self.battery}%"
             #Only send percentage is connected and available
             if self.battery != -1:
                 output["percentage"] = self.battery
-        else:
+
+            if self.battery >= 60:
+                status += "good"
+            elif self.battery >= 60:
+                status += "good"
+            elif self.battery >= 30:
+                status += "warning"
+            elif self.battery >= 0:
+                status += "critical"
+            else:
+                status += "unknown"
+        elif self.is_adapter_blocked:
             icon = ""
+            status = "blocked"
+            output["tooltip"] = f"Blocked"
+        elif not self.is_connected:
+            icon = ""
+            status = "disconnected"
+            output["tooltip"] = f"Disconnected"
+        else:
+            icon = "?"
+            status = "unknown"
+            output["tooltip"] = f"Unknown state\nConnected {self.is_connected}\nBlocked {self.is_adapter_blocked}"
+
         
         output["text"] = icon
-
-        if "percentage" in output:
-            if self.battery >= 60:
-                bat_status = "good"
-            elif self.battery >= 30:
-                bat_status = "warning"
-            else:
-                bat_status = "critical"
-        else:
-            bat_status = "unknown"
-
-        output["class"] = f"bat-{bat_status}"
+        output["class"] = status
                 
         logger.debug(json.dumps(output))
     
@@ -154,10 +302,10 @@ class BluetoothHandler(btle.DefaultDelegate):
 
     def handleNotification(self, cHandle, data):
         logger.debug("Received notification from BLE")
-        if cHandle == 45:
+        if cHandle == BATTERY_LEVEL_HANDLER:
             new_bat = ord(data)
-            logger.info(f"Received battery update, new: {new_bat}% - old: {self.battery}")
             if self.battery != new_bat:
+                logger.info(f"Received battery update, new: {new_bat}% - old: {self.battery}")
                 self.battery = new_bat
                 self.print_status()
         else:
@@ -168,6 +316,10 @@ class BluetoothHandler(btle.DefaultDelegate):
     def stop(self):
         try:
             self.btle_dev.disconnect()
+            # Before finishing, set battery to an unknown state
+            # so that this is also evident on output parsing scripts
+            self.battery = -1
+            self.print_status()
         except Exception:
             pass
 
@@ -176,14 +328,15 @@ def parse_arguments():
 
     # Increase verbosity with every occurance of -v
     parser.add_argument('-v', '--verbose', action='count', default=0)
-
-    parser.add_argument('--listen', action='store_true', help="Listen for connectivity and battery changes")
-    parser.add_argument('--toggle', action='store_true', help="Toggle bluetooth connection")
-
     # Define for which player we're listening
     parser.add_argument('address', metavar='addr', type=str,
                     help='Bluetooth address of the headphones.')
 
+    # Mutually exclusive group, one of this options must be specified AT MOST.
+    mxg = parser.add_mutually_exclusive_group(required=True)
+    mxg.add_argument('--listen', action='store_true', help="Listen for connectivity and battery changes")
+    mxg.add_argument('--toggle', action='store_true', help="Toggle bluetooth connection")
+    mxg.add_argument('--power-off', action='store_true', help="Disconnect and block the bluetooth")
 
     return parser.parse_args()
 
@@ -219,9 +372,13 @@ def ensure_one_instance(script_name):
     with open(pid_file, "w") as pf:
         pf.write("%s" % os.getpid())
 
-def main():
-    ensure_one_instance(SCRIPT_NAME)
+def sigint_handler(loop, sig, frame):
+    logger.info(f"Received signal {sig}")
+    logger.info("Interrupt, stopping service")
+    loop.quit()
 
+
+def main():
     DBusGMainLoop(set_as_default=True)
     bus = dbus.SystemBus()
     arguments = parse_arguments()
@@ -240,9 +397,12 @@ def main():
     if arguments.toggle:
         logger.info("Toggling bluetooth state")
         bt_handler.toggle_connection()
-
-    if arguments.listen:
-        logger.info("Listening to battery and connection events...")
+    elif arguments.power_off:
+        logger.info("Power off and block bluetooth")
+        bt_handler.power_off(True)
+    elif arguments.listen:
+        ensure_one_instance(SCRIPT_NAME)
+        logger.info("Listening to events...")
         bt_handler.start_listen_loop()
         logger.info("Starting main loop...")
         loop.run()
@@ -250,12 +410,6 @@ def main():
     bt_handler.stop()
     bus.close()
     logger.info("Finished")
-
-
-def sigint_handler(loop,sig, frame):
-    logger.info(f"Received signal {sig}")
-    logger.info("Interrupt, stopping service")
-    loop.quit()
 
 if __name__ == "__main__":
     main()
