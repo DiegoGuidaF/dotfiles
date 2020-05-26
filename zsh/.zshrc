@@ -1,3 +1,5 @@
+# Disable terminal pausing (XON/XOFF flow control)
+stty -ixon
 # Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
 # Initialization code that may require console input (password prompts, [y/n]
 # confirmations, etc.) must go above this block; everything else may go below.
@@ -78,9 +80,6 @@ plugins=(
 
 # User configuration
 
-# Disable terminal pausing (XON/XOFF flow control)
-stty -ixon
-
 if [ -n "$DESKTOP_SESSION" ];then
 # Init keyring
     gnome-keyring-daemon --start --components=gpg,pkcs11,secrets,ssh
@@ -122,9 +121,6 @@ fi
 export PKGEXT='.pkg.tar'
 
 export PIP
-
-#Init the ssh-keys manager keychain and export the variables
-#eval $(keychain --eval --quiet ws_bitbucket ws_loadsensing --confhost)
 
 ZSH_CACHE_DIR=$HOME/.oh-my-zsh-cache
 if [[ ! -d $ZSH_CACHE_DIR ]]; then
