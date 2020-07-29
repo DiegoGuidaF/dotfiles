@@ -134,8 +134,8 @@ client.urgent           $color1      $color1        $color1       $color1      $
 output * bg $wallpaper fill
 
 # Automatically toggle laptop display when lid is closed
-bindswitch --reload lid:on output $LAPTOP_OUT disable
-bindswitch --reload lid:off output $LAPTOP_OUT enable
+bindswitch --reload --locked lid:on output $LAPTOP_OUT disable
+bindswitch --reload --locked lid:off output $LAPTOP_OUT enable
 
 # return to previous workspace back-and-forth
 workspace_auto_back_and_forth yes
@@ -168,12 +168,12 @@ focus_wrapping no
 
 ### Idle configuration
 # Reload setup on resume to fix waybar (can be fixed just by restarting waybar if required)
-exec swayidle -w \
-         lock '$screenlock -f' \
-         timeout 600 '$screenlock -f' \
+exec swayidle \
+         lock '$screenlock' \
+         timeout 600 '$screenlock' \
          timeout 900 'swaymsg "output * dpms off"' \
            resume 'swaymsg "output * dpms on"' \
-         before-sleep '$screenlock -f'
+         before-sleep '$screenlock'
 
 # Hide cursor when not in use
 seat seat0 hide_cursor 3000
@@ -206,6 +206,9 @@ input type:keyboard {
 # Launch firefox
 bindsym $mod+q exec $browser
 
+#Launch selected app (via Rofi) on a WS with name based on desktop file
+bindsym $mod+Shift+d exec $ws_controller -r
+
 bindsym XF86Calculator exec gnome-calculator
 # Toggle touchpad on F9 function
 bindsym XF86Keyboard  exec swaymsg input "2:7:SynPS/2_Synaptics_TouchPad" events toggle "disabled enabled"
@@ -228,9 +231,10 @@ bindsym --locked $mod+F5 exec swaymsg output "*" dpms on
 
 # Take screenshot, select area
 bindsym $mod+p exec $screenshot
+bindsym $mod+F2 exec $screenshot
 
 # Lock desktop
-bindsym $mod+b exec $screenlock -f
+bindsym $mod+b exec $screenlock
 # Change focus with tab keys
 bindsym $mod+Tab focus right
 bindsym $mod+Shift+Tab focus left
