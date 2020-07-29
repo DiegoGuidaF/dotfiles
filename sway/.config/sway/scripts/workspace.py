@@ -10,7 +10,7 @@ LOG_FILE = 'workspace.log'
 
 HOME = os.path.expanduser("~")
 #dmenu with rofi:
-rofi_dmenu_cmd = [HOME+'/bin/launch_rofi.sh', '-dmenu']
+rofi_dmenu_cmd = [HOME+'/bin/launch_rofi.sh']
 
 sway = i3ipc.Connection()
 
@@ -20,6 +20,7 @@ def arg_parser():
     group.add_argument('--go', '-g', nargs='?', const='default', type=str, action='store', help='Launch dmenu to select WS, if not exists create it.')
     group.add_argument('--switch', '-s', type=int, help='Switch to WS by number')
     group.add_argument('--move', '-m', nargs='?', const='default', type=str, action='store', help='Move WS to selected output')
+    group.add_argument('--runInWs', '-r',action='store_true', help='Run application in a workspace of the same name')
     args = parser.parse_args()
     return args
 
@@ -37,7 +38,7 @@ def init_logger():
     f_handler.setFormatter(f_formatter)
     logger.addHandler(f_handler)
 
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
 
 def check_ws_exists(ws_name):
     pattern = re.compile("^[0-9]\.")
@@ -53,12 +54,15 @@ def check_ws_exists(ws_name):
             return True
     return False
 
+def generate_ws_name(ws_name):
+    num = get_available_ws_number()
+    return f'{num}.{ws_name}'
+
 def go_to_ws(ws_name, cmd):
     logger.info(f'Go to {ws_name}')
     if not check_ws_exists(ws_name):
+        ws_name = generate_ws_name(ws_name)
         logger.info(f'Creating workspace {ws_name}')
-        num = get_available_ws_number()
-        ws_name = f'{num}.{ws_name}'
     else:
         logger.info(f'Workspace {ws_name} already present, no need to create it')
 
@@ -95,12 +99,46 @@ def list_ws_get_option():
     dmenu_input = '\n'.join(ws_list)
     
     try:
-        cmd_run = sp.run(rofi_dmenu_cmd, capture_output=True, check=True, text=True,input=dmenu_input)
+        cmd_run = sp.run(rofi_dmenu_cmd + ["-dmenu"], capture_output=True, check=True, text=True,input=dmenu_input)
         # Get output and strip trailing line jump     
         chosen_ws = cmd_run.stdout.rstrip('\n')
         return chosen_ws
     except sp.CalledProcessError:
         logger.error(f'Failed executing {cmd_run.args}')
+
+def run_app_in_own_ws():
+    rofi_cmd = rofi_dmenu_cmd + ["-show", "drun", "-run-command","echo {cmd}"]
+    app_cmd = sp.run(rofi_cmd, capture_output=True, check=True, text=True).stdout.rstrip('\n')
+    DESKTOP_FILES_LOCATIONS = ["/usr/share/applications",f"{HOME}/.local/share/applications"]
+    RG_CMD = ["rg","-Lg","!mimeinfo.cache"]
+
+    # Command to find desktop file containing the chosen app so that we can find an user-friendly name
+    # to set as WS name.
+    #Note: Using ripgrep since it is way faster (compiled and optimized for this)
+    get_app_name_cmd = RG_CMD + ["-Fli", app_cmd] + DESKTOP_FILES_LOCATIONS
+
+    desktop_file_name = sp.run(get_app_name_cmd, capture_output=True, check=True, text=True).stdout.rstrip('\n')
+    logger.debug(f"Desktop file is {desktop_file_name}")
+
+    # Find the name field (sometimes just Name, others with en_GB (could be en_US, check if this happens)
+    get_friendly_name = RG_CMD + ["^Name=|^Name\\[en_GB\\]=",desktop_file_name]
+    app_name_line = sp.run(get_friendly_name, capture_output=True, check=True, text=True).stdout.rstrip('\n')
+
+    #TODO: Limit number of characters if found annoying
+    app_name = app_name_line.split("\n")[0].split("=")[1].replace(" ","")
+
+    # Add the number of the next WS
+    ws_name = generate_ws_name(app_name)
+    logger.info(f"WS name is {ws_name}")
+
+    # Start the app in a new workspace.
+    # TODO: Find if possible to not go to WS when starting, so that we can start in the background
+    start_app_in_ws_cmd = ["swaymsg",f"workspace {ws_name}; exec {app_cmd}"]
+    sp.run(start_app_in_ws_cmd, check=True)
+
+def switch_to_prev_ws():
+    switch_prev_ws_cmd = ["swaymsg","workspace", "back_and_forth"]
+    sp.run(switch_prev_ws_cmd, check=True)
 
 def main():
     init_logger()
@@ -116,6 +154,9 @@ def main():
         chosen_ws = list_ws_get_option()
         logger.info(f"Chosen ws name is {chosen_ws}")
         go_to_ws(chosen_ws,'move container to workspace {}')
+    elif args.runInWs:
+        logger.info(f"Running application in WS of same name.")
+        run_app_in_own_ws()
 
 if __name__ == "__main__":
     main()
