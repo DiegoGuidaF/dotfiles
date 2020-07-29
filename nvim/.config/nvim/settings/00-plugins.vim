@@ -24,10 +24,13 @@ Plug 'honza/vim-snippets'
 "
 " Plugins to enable completitions with LanguageServerProtocol
 " Load from source, since tags only happen upon release.
-Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+" If installing from source
+"Plug 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
+"
 " Install coc extensions. This won't keep updating them or install an specific
 " version
-let g:coc_global_extensions = ['coc-ccls', 'coc-json', 'coc-python', 'coc-snippets', 'coc-phpls']
+let g:coc_global_extensions = ['coc-json', 'coc-python', 'coc-snippets', 'coc-phpls']
 " Extra info:
 " Installed watchman with yay to theoretically inform coc when files changes.
 " This should fix behaviour
