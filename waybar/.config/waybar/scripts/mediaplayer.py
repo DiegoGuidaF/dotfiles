@@ -10,7 +10,8 @@ gi.require_version('Playerctl', '2.0')
 from gi.repository import Playerctl, GLib
 from functools import partial
 
-logger = logging.getLogger(__name__)
+SCRIPT_NAME = "mediaplayer"
+logger = logging.getLogger(SCRIPT_NAME)
 
 
 def write_output(text, player):
@@ -87,12 +88,10 @@ def parse_arguments():
 
     return parser.parse_args()
 
-def ensure_one_instance():
+def ensure_one_instance(script_name):
     """ Ensure there's only one instance of this script running.
         If instance already running, kill it.
     """
-    #script_name = f'{__file__}'.rstrip('.py').lstrip('./')
-    script_name = "mediaplayer"
     pid_file = f'{os.getenv("XDG_RUNTIME_DIR")}/{script_name}.pid'
 
     #This is to check if there is already a lock file existing#
@@ -121,12 +120,12 @@ def ensure_one_instance():
         pf.write("%s" % os.getpid())
 
 def main():
-    arguments = parse_arguments()
-    ensure_one_instance()
-
     # Initialize logging
     logging.basicConfig(stream=sys.stderr, level=logging.DEBUG,
-                        format='%(name)s %(levelname)s %(message)s')
+                        format='%(asctime)s - %(name)s %(levelname)s %(message)s', datefmt="%Y-%m-%d %H:%M:%S")
+
+    arguments = parse_arguments()
+    ensure_one_instance(SCRIPT_NAME)
 
     # Logging is set by default to WARN and higher.
     # With every occurrence of -v it's lowered by one

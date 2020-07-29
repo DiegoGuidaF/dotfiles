@@ -29,6 +29,7 @@ case $(echo $BATTINFO | awk '{print $3}' | sed s/,//) in
     *)
         echo "Battery Unknown state!"
         echo $BATTINFO
+        exit 0
         ;;
 
 esac
