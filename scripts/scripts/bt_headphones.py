@@ -14,8 +14,8 @@ import os
 import subprocess
 import time
 
-logger = logging.getLogger(__name__)
 SCRIPT_NAME = "bt-headphones"
+logger = logging.getLogger(SCRIPT_NAME)
 
 ADAPTER_NAME = "hci0"
 ADAPTER_FULL_NAME = "/org/bluez/" + ADAPTER_NAME
@@ -198,22 +198,42 @@ class BluetoothHandler(btle.DefaultDelegate):
         # Check current adapter status
         is_powered = self.get_power_status()
 
-        if not is_powered:
-            if self.is_adapter_blocked:
+        while not is_powered:
+            logger.debug("Loop powering up adapter...")
+            # Note thay, for an unknown reason, when unblocking the bluetooth adapter
+            # a second adapter appears in rfkill with blocked state but the dbus adapter
+            # is detected and works expect for the powering part, which can never be set to true
+            # without raising any exception and therefore the is_powered is never true
+            # unless the rfkill is unblocked again.
+            # Rfkill output with second adapter:
+            # 0 bluetooth tpacpi_bluetooth_sw unblocked unblocked
+            # 1 wlan      phy0                unblocked unblocked
+            # 4 bluetooth hci0                  blocked unblocked
+            #
+            rfkill_adapters = json.loads(subprocess.check_output(["rfkill","-J"]))
+            rfkill_status = [adapter["soft"] for adapter in rfkill_adapters[''] if adapter["type"] == "bluetooth"]
+            logger.debug(f"Rfkill: {rfkill_status}")
+            
+            if "blocked" in rfkill_status:
                 logger.debug("Unblocking adapter")
-                ret = subprocess.check_call(["pkexec","rfkill","unblock","bluetooth"])
+                ret = subprocess.check_call(["pkexec","rfkill", "unblock", "bluetooth"])
                 if ret != 0:
                     logger.error("Failed unblocking adapter")
                     raise Exception
-                # Wait for the device to turn on
+                # Wait for the device to turn on by checking the Dbus interface.
                 while self.is_adapter_blocked:
-                    time.sleep(0.5)
                     is_powered = self.get_power_status()
-            
-            # It might be already powered on during init depending on bluetooth configuration
-            if not is_powered:
+                    time.sleep(0.5)
+
+            try:
                 logger.info("Turning adapter on")
                 self.set_adapter_property("Powered",dbus.Boolean(True))
+            except dbus.exceptions.DBusException:
+                logger.error("Couldn't set adapter power via Dbus")
+                pass
+            time.sleep(0.5)
+
+            is_powered = self.get_adapter_property("Powered")
 
         else:
             logger.info("Bluetooth already in the desired state")
@@ -237,14 +257,25 @@ class BluetoothHandler(btle.DefaultDelegate):
         # Power off the adapter
         self.power_off()
 
+    def connect_btle(self):
+        # Ensure we are disconnected
+        try:
+            self.btle_dev.disconnect()
+        except Exception:
+            pass
+
+        # Stablish connection and callbacks to self
+        try:
+            self.btle_dev.connect(self.address)
+            self.btle_dev.setDelegate(self)
+        except Exception:
+            logger.error("Failed connecting to BTLE, retrying...")
+            pass
+
     def battery_notifications_loop(self):
         logger.info("--Starting battery notification handler...")
-        try:
-            self.btle_dev = btle.Peripheral(self.address)
-        except btle.BTLEDisconnectError:
-            logger.error("Failed connecting to BTLE, retrying...")
-            self.btle_dev = btle.Peripheral(self.address)
-        self.btle_dev.setDelegate(self)
+        self.btle_dev = btle.Peripheral()
+        self.connect_btle()
 
         logger.info("Listening for battery notifications")
         while self.is_connected:
@@ -252,7 +283,10 @@ class BluetoothHandler(btle.DefaultDelegate):
                 self.btle_dev.waitForNotifications(5)
             except Exception as e:
                 logger.error(f"Error while waiting for bat. notification {e}")
-                pass
+                time.sleep(5)
+                logger.info("Reconnecting BTLE...")
+                self.btle_dev.disconnect()
+                self.connect_btle()
 
         logger.info("--Stopped listening for battery notifications")
         self.btle_dev.disconnect()
@@ -311,7 +345,7 @@ class BluetoothHandler(btle.DefaultDelegate):
         else:
             logger.debug("Received unknown notification from BLE")
             logger.debug(f"Handle: {cHandle}")
-            logger.debug(f"Data: {ord(data)}")
+            logger.debug(f"Data: {data}")
 
     def stop(self):
         try:
@@ -379,12 +413,13 @@ def sigint_handler(loop, sig, frame):
 
 
 def main():
+    # Initialize logging
+    logging.basicConfig(stream=sys.stderr, level=logging.DEBUG,
+                        format='%(asctime)s - %(name)s %(levelname)s %(message)s', datefmt="%Y-%m-%d %H:%M:%S")
+
     DBusGMainLoop(set_as_default=True)
     bus = dbus.SystemBus()
     arguments = parse_arguments()
-    # Initialize logging
-    logging.basicConfig(stream=sys.stderr, level=logging.DEBUG,
-                        format='%(name)s %(levelname)s %(message)s')
     # Logging is set by default to WARN and higher.
     # With every occurrence of -v it's lowered by one
     logger.setLevel(max((3 - arguments.verbose) * 10, 0))
