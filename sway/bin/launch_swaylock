@@ -56,4 +56,4 @@ else
     echo "Wallpaper already exists in cache, no need to add lock icon!"
 fi
 
-swaylock -i "${random_wallpaper_cache_file}" "${param[@]}" $@
+swaylock -i "${random_wallpaper_cache_file}" "${param[@]}" "$@"
