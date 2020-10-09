@@ -22,7 +22,8 @@
 #custom-media,
 #custom-pacman,
 #custom-redshift,
-#custom-btheadphones
+#custom-btheadphones,
+#idle_inhibitor
 {
     background-color: @background;
     padding: 0 5px;
@@ -92,6 +93,9 @@
 
 #network {
     color: @foreground;
+}
+#idle_inhibitor.activated {
+    color: @color3;
 }
 
 #pulseaudio {

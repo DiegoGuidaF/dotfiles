@@ -6,7 +6,7 @@
 
     // Choose the order of the modules
     "modules-left": ["sway/workspaces", "sway/mode"],
-    "modules-center": ["custom/pacman", "temperature", "cpu", "memory","pulseaudio", "network", "battery", "backlight", "custom/redshift", "custom/btheadphones"],
+    "modules-center": ["idle_inhibitor", "custom/pacman", "temperature", "cpu", "memory","pulseaudio", "network", "battery", "backlight", "custom/redshift", "custom/btheadphones"],
     "modules-right": ["custom/media", "clock", "tray"],
 
     // Modules configuration
@@ -15,9 +15,9 @@
          "all-outputs": false,
          "format": "{}",
          "format-icons": {
-             "1": "",
-             "2": "",
-             "3": ""
+             "1.WEB": "",
+             "2.PERS": "",
+             "3.DEV": ""
          }
      },
     "sway/mode": {
@@ -29,9 +29,9 @@
         "spacing": 10
     },
     "clock": {
-        "interval": 5,
+        "interval": 30,
         "format": "{:%a %d %b %H:%M} ",
-        "tooltip": false
+        "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
     },
     "cpu": {
         "interval": 5,
@@ -100,12 +100,12 @@
         "tooltip": false
     },
     "backlight": {
+        "format-icons": ["🌑","🌒","🌓","🌔","🌕"],
         "device": "intel_backlight",
         "format": "{icon}",
         "interval": 5,
         "format-alt": "{icon}{percent}%",
         "format-alt-click": "click-right",
-        "format-icons": ["", "ﯧ", "ﯦ"],
         "on-scroll-up":   "light -A 5",
         "on-scroll-down": "light -U 5"
     },
@@ -129,11 +129,18 @@
         "tooltip": false
     },
   "custom/pacman": {
-        "format": " {}",
+        "format": "{icon}{}",
+        "return-type": "json",
         "interval": 3600,
-        // Show update number, empty if none found so element is hidden.
-        "exec": "checkupdates | wc -l |sed 's/^0$//g'",
-        "exec-if": "ping -c 1 8.8.8.8"
+        "exec": "$HOME/.config/waybar/scripts/pacupdates.sh",
+        "exec-if": "ping -c 1 8.8.8.8",
+        //"escape": true,
+        "tooltip": true,
+        "exec-on-event":true,
+        "format-icons": {
+            "pending updates": " ",
+            "updated": ""
+        }
     },
   "custom/redshift": {
         "format": "{icon}",
@@ -147,7 +154,6 @@
         },
         "tooltip": false
     },
-
     "custom/btheadphones": {
         "format": "{}",
         "return-type": "json",
@@ -165,6 +171,13 @@
         "on-click": "$HOME/scripts/bt_headphones.py 00:1B:66:C1:83:4A --toggle",
         "on-click-right": "$HOME/scripts/bt_headphones.py 00:1B:66:C1:83:4A --power-off",
         "tooltip": true
+    },
+    "idle_inhibitor": {
+        "format": "{icon}",
+        "format-icons": {
+            "activated": "",
+            "deactivated": ""
+        }
     }
 }
 //        
