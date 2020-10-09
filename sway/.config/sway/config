@@ -9,7 +9,7 @@ set $height 15
 # Laptop screen
 set $LAPTOP_OUT eDP-1
 set $EXT_CENTER DP-1
-set $EXT_RIGHT HDMI-A-2
+set $EXT_LEFT HDMI-A-2
 
 # Home row direction keys, like vim
 set $left h
@@ -18,7 +18,7 @@ set $up k
 set $right l
 
 #Default programs
-set $browser    firefox-nightly
+set $browser    firefox
 set $music      spotify
 # Launch nvim by default since it is useful
 # as a multiplexer (replacement of tmux)
@@ -33,7 +33,7 @@ set $ws_controller ~/.config/sway/scripts/workspace.py
 
 # Command to lock screen: Pause playback and then launch script
 # that randomly selects a lockscreen picture.
-set $screenlock playerctl -a pause | $HOME/bin/launch_swaylock
+set $screenlock playerctl -a pause | $HOME/bin/launch_swaylock -f
 
 # Script to take screenshots
 set $screenshot ~/.config/sway/scripts/screenshot.sh
@@ -42,9 +42,9 @@ set $screenshot ~/.config/sway/scripts/screenshot.sh
 set $wob_cmd wob -a top -W 200 -H 30 -o 2 -b 2 -M 0 --border-color "#FFfabd2f" --background-color "#ff282828" --bar-color "#ffd5c4a1"
 
 # Set some workspaces
-set $WSBROWSER  1.
-set $WSPERSONAL 2.
-set $WSDEV      3.
+set $WSBROWSER  1.WEB
+set $WSPERSONAL 2.PERS
+set $WSDEV      3.DEV
 # TODO: Put steam icon
 set $WSSTEAM    9.戮
 
@@ -102,24 +102,29 @@ workspace $WSDEV; exec $term
 # On init set workspaces in work mode.
 output '*' enable
 #output $LAPTOP_OUT position 0 0
-#output $EXT_RIGHT position 3840 0
+#output $EXT_LEFT position 3840 0
 #output $EXT_CENTER position 1920 0
 # Home setup
-output $EXT_RIGHT position 1920 0
-output $LAPTOP_OUT position 0 0
+output $EXT_LEFT position 0 0
+output $LAPTOP_OUT position 1920 0
 #output $EXT_CENTER position 1920 0
 
 ############
 # Settings #
 ############
 
+set $my_cursor Adwaita
+set $my_cursor_size 20
+
+seat seat0 xcursor_theme $my_cursor $my_cursor_size
 # Set GTK settings via gsettings. This is the proper way since
 # doing it through env variables doesn't allow setting all variables.
 set $gnome-schema org.gnome.desktop.interface
 exec_always {
     gsettings set $gnome-schema gtk-theme 'Arc-Dark'
     gsettings set $gnome-schema icon-theme 'Arc'
-    #gsettings set $gnome-schema cursor-theme 'Your cursor Theme'
+    gsettings set $gnome-schema cursor-size $my_cursor_size
+    gsettings set $gnome-schema cursor-theme $my_cursor
 }
 
 # Configure container colors
@@ -168,7 +173,7 @@ focus_wrapping no
 
 ### Idle configuration
 # Reload setup on resume to fix waybar (can be fixed just by restarting waybar if required)
-exec swayidle \
+exec swayidle -w \
          lock '$screenlock' \
          timeout 600 '$screenlock' \
          timeout 900 'swaymsg "output * dpms off"' \
@@ -273,11 +278,11 @@ bindsym $mod+y move workspace to output left
 # Bind keys above jkl to each monitor as they are seen in front of you.
 # TODO: TMP Bindsym until script is done.
 # LEFT
-bindsym $mod+u move workspace to output $LAPTOP_OUT
+bindsym $mod+i move workspace to output $EXT_LEFT
 # Center
-bindsym $mod+i move workspace to output $EXT_CENTER
+#bindsym $mod+i move workspace to output $EXT_CENTER
 # Right
-bindsym $mod+o move workspace to output $EXT_RIGHT
+bindsym $mod+o move workspace to output $LAPTOP_OUT
 
 # Change monitor positions.
 # Note: Mirroring doesn't work as-of-yet in sway.
