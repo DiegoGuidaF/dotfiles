@@ -134,7 +134,7 @@ map <leader>ff :Clap files --hidden<CR>
 " Add no-messages option to ignore files with no permission to read
 " Find words
 map <leader>fl :Clap grep ++opt=--no-messages<CR>
-map <leader>fw :Clap grep ++opt=--no-messages ++query=<cword><CR>
+map <leader>fw :Clap grep2 ++opt=--no-messages ++query=<cword><CR>
 
 " Search in dotfiles
 map <leader>fd :Clap files --hidden ~/dotfiles<CR>
