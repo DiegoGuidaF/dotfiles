@@ -14,12 +14,12 @@ if [ $# != 0 ]; then
 fi
 
 # Use different copy cmds depending if on wayland or X11 display servers.
-if [ -n WAYLAND_DISPLAY ]; then
+if [ -n "$WAYLAND_DISPLAY" ]; then
     hash wl-copy 2>/dev/null || { echo >&2 "wl-copy not installed. Required for wayland"; exit 1; }
     copy_cmd='wl-copy'
 else
     hash xclip 2>/dev/null || { echo >&2 "xclip not installed. Required for x11"; exit 1; }
-    copy_cmd='xclip -selection "clipboard"'
+    copy_cmd='xclip -selection clipboard'
 fi
 
 inside_git_repo="$(git rev-parse --is-inside-work-tree 2>/dev/null)"
@@ -28,10 +28,10 @@ if [ ! "$inside_git_repo" ]; then
     exit 1
 fi
 
-selected_branch=$(git branch -a| fzf +s --tac --height 40%)
-selected_branch=${selected_branch#*$REMOTE_BRANCH_PREFIX}
-if [ "$selected_branch" == "" ]; then
+selected_branch="$(git branch -a| fzf +s --tac --height 40%)"
+selected_branch="${selected_branch#*$REMOTE_BRANCH_PREFIX}"
+if [ -z "$selected_branch" ]; then
     exit 1
 fi
 # Echo selection and copy it to clipboard
-echo -n "$selected_branch" | $copy_cmd
+echo -n "$selected_branch" | ${copy_cmd}
