@@ -13,11 +13,11 @@
     "sway/workspaces": {
          "disable-scroll": true,
          "all-outputs": false,
-         "format": "{}",
+         "format": "{icon}",
          "format-icons": {
-             "1.WEB": "",
-             "2.PERS": "",
-             "3.DEV": ""
+             "1": "",
+             "2": "",
+             "3": ""
          }
      },
     "sway/mode": {
@@ -44,7 +44,12 @@
     }, 
     "memory": {
         "interval": 30,
-        "format": " {}%"
+        "format": " {}%",
+        "states": {
+            "good": 50,
+            "warning": 70,
+            "critical": 80
+        }
     },
     "battery": {
         "format": "{icon} {capacity}%",
@@ -109,11 +114,23 @@
         "on-scroll-up":   "light -A 5",
         "on-scroll-down": "light -U 5"
     },
-     "temperature": {
+    "temperature": {
         "interval": 5,
         "critical-threshold": 80,
         "format-critical": " {temperatureC}°C",
         "format": " {temperatureC}°C"
+    },
+    "custom/weather": {
+        "exec": "~/.config/waybar/weather.sh",
+        "format": "{}",
+        "return-type": "json",
+        "interval": 600
+    },
+    "custom/power": {
+      	"format": "⏻",
+      	"on-click": "nwgbar -o 0.2",
+		"escape": true,
+    	"tooltip": false 
     },
     "custom/media": {
         "format": "{icon} {}",
@@ -134,7 +151,6 @@
         "interval": 3600,
         "exec": "$HOME/.config/waybar/scripts/pacupdates.sh",
         "exec-if": "ping -c 1 8.8.8.8",
-        //"escape": true,
         "tooltip": true,
         "exec-on-event":true,
         "format-icons": {
@@ -180,18 +196,3 @@
         }
     }
 }
-//        
-//        
-//        
-//        
-//        
-//        
-//        
-//        
-//        
-//        
-//        
-//        
-//        
-//        
-//        

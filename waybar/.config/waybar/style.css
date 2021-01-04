@@ -90,6 +90,12 @@
 #memory {
     color: @foreground;
 }
+#memory.warning {
+    color: @color3;
+}
+#memory.critical {
+    color: @color1;
+}
 
 #network {
     color: @foreground;
