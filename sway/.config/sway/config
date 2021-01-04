@@ -8,7 +8,9 @@ set $height 15
 
 # Laptop screen
 set $LAPTOP_OUT eDP-1
-set $EXT_CENTER DP-1
+#set $EXT_CENTER HDMI-A-2
+#set $EXT_EXTRA DP-1
+#set $EXT_LEFT DP-2
 set $EXT_LEFT HDMI-A-2
 
 # Home row direction keys, like vim
@@ -18,7 +20,10 @@ set $up k
 set $right l
 
 #Default programs
-set $browser    firefox
+#set $browser    firefox-nightly
+set $browser      vivaldi-stable
+set $browser_work $browser --profile-directory="Default"
+set $browser_pers $browser --profile-directory="Profile 1"
 set $music      spotify
 # Launch nvim by default since it is useful
 # as a multiplexer (replacement of tmux)
@@ -42,9 +47,9 @@ set $screenshot ~/.config/sway/scripts/screenshot.sh
 set $wob_cmd wob -a top -W 200 -H 30 -o 2 -b 2 -M 0 --border-color "#FFfabd2f" --background-color "#ff282828" --bar-color "#ffd5c4a1"
 
 # Set some workspaces
-set $WSBROWSER  1.WEB
-set $WSPERSONAL 2.PERS
-set $WSDEV      3.DEV
+set $WSBROWSER  1
+set $WSPERSONAL 2
+set $WSDEV      3
 # TODO: Put steam icon
 set $WSSTEAM    9.戮
 
@@ -87,7 +92,7 @@ exec /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
 exec pkill -f "networkd-notify" | networkd-notify
 
 # Night mode - Redden the screen as the daylight diminishes.
-exec launch_redshift.sh toggle
+exec gammastep
 
 # Create a tmp file as input for "wob".
 # This enables showing percentages on volume/brightness... changes
@@ -95,8 +100,8 @@ exec mkfifo $SWAYSOCK.wob && tail -f $SWAYSOCK.wob | $wob_cmd
 
 
 # Set initial workspaces
-workspace $WSBROWSER; exec $browser
-workspace $WSPERSONAL; exec $term
+workspace $WSBROWSER; exec $browser_work
+workspace $WSPERSONAL; exec $browser_pers
 workspace $WSDEV; exec $term
 
 # On init set workspaces in work mode.
@@ -116,7 +121,6 @@ output $LAPTOP_OUT position 1920 0
 set $my_cursor Adwaita
 set $my_cursor_size 20
 
-seat seat0 xcursor_theme $my_cursor $my_cursor_size
 # Set GTK settings via gsettings. This is the proper way since
 # doing it through env variables doesn't allow setting all variables.
 set $gnome-schema org.gnome.desktop.interface
@@ -181,7 +185,8 @@ exec swayidle -w \
          before-sleep '$screenlock'
 
 # Hide cursor when not in use
-seat seat0 hide_cursor 3000
+seat * hide_cursor 3000
+seat * xcursor_theme $my_cursor $my_cursor_size
 
 # Touchpad configuration
 input "2:7:SynPS/2_Synaptics_TouchPad" {
@@ -199,10 +204,19 @@ input "2:7:SynPS/2_Synaptics_TouchPad" {
 input type:keyboard {
     repeat_delay 200
     repeat_rate 30
-    # Change between es/us layout with capslock key
-    xkb_layout es,us
-    xkb_options grp:caps_toggle,grp_led:caps
+    xkb_layout es
+    # Caps lock is also escape unless shift is pressed
+    xkb_options caps:escape_shifted_capslock
 }
+
+# Configure one separate seat for external keyboard+mouse
+#seat seat1 {
+#    attach 1241:854:DuckyChannel_International_Co.,_Ltd._Ducky_Keyboard
+#    attach 1241:854:DuckyChannel_International_Co.,_Ltd._Ducky_Keyboard_Mouse
+#    attach 1241:854:DuckyChannel_International_Co.,_Ltd._Ducky_Keyboard_Consumer_Control
+#    attach 1241:854:DuckyChannel_International_Co.,_Ltd._Ducky_Keyboard_System_Control
+#    attach 1133:16511:Logitech_G502
+#}
 
 ################
 # Key bindings #
@@ -223,6 +237,9 @@ bindsym XF86AudioRaiseVolume exec pamixer -ui 2 && pamixer --get-volume > $SWAYS
 bindsym XF86AudioLowerVolume exec pamixer -ud 2 && pamixer --get-volume > $SWAYSOCK.wob
 bindsym XF86AudioMute exec pamixer --toggle-mute && ( pamixer --get-mute && echo 0 > $SWAYSOCK.wob ) || pamixer --get-volume > $SWAYSOCK.wob
 bindsym XF86AudioMicMute exec pamixer --default-source --toggle-mute &&( pamixer --default-source --get-mute && echo 0 > $SWAYSOCK.wob ) || pamixer --default-source --get-volume > $SWAYSOCK.wob
+bindsym XF86AudioPlay exec playerctl play-pause
+bindsym XF86AudioNext exec playerctl next
+bindsym XF86AudioPrev exec playerctl previous
 
 # Screen brightness
 bindsym XF86MonBrightnessUp exec light -A 5 && light -G | cut -d'.' -f1 > $SWAYSOCK.wob
@@ -240,6 +257,10 @@ bindsym $mod+F2 exec $screenshot
 
 # Lock desktop
 bindsym $mod+b exec $screenlock
+
+# Suspend system
+bindsym $mod+Shift+s exec systemctl suspend-then-hibernate
+
 # Change focus with tab keys
 bindsym $mod+Tab focus right
 bindsym $mod+Shift+Tab focus left
@@ -388,6 +409,9 @@ for_window [title="(?i)Sharing Indicator"] floating enable, move position mouse
 for_window [class="^.*"] inhibit_idle fullscreen
 for_window [app_id="^.*"] inhibit_idle fullscreen
 
+# Move firefox video-in-video mode to the right monitor
+#for_window [name="Picture-in-Picture"] move container to workspace "8.Video", move container to output $EXT_LEFT, fullscreen 
+
 ############################
 #------DEFAULTS-------------
 ############################
@@ -444,16 +468,16 @@ bindsym $mod+8 exec swaymsg workspace number 8
 bindsym $mod+9 exec swaymsg workspace number 9
 bindsym $mod+0 exec swaymsg workspace number 10
 # Move focused container to workspace
-bindsym $mod+Shift+1 move container to workspace 1
-bindsym $mod+Shift+2 move container to workspace 2
-bindsym $mod+Shift+3 move container to workspace 3
-bindsym $mod+Shift+4 move container to workspace 4
-bindsym $mod+Shift+5 move container to workspace 5
-bindsym $mod+Shift+6 move container to workspace 6
-bindsym $mod+Shift+7 move container to workspace 7
-bindsym $mod+Shift+8 move container to workspace 8
-bindsym $mod+Shift+9 move container to workspace 9
-bindsym $mod+Shift+0 move container to workspace 10
+bindsym $mod+Shift+1 move container to workspace number 1
+bindsym $mod+Shift+2 move container to workspace number 2
+bindsym $mod+Shift+3 move container to workspace number 3
+bindsym $mod+Shift+4 move container to workspace number 4
+bindsym $mod+Shift+5 move container to workspace number 5
+bindsym $mod+Shift+6 move container to workspace number 6
+bindsym $mod+Shift+7 move container to workspace number 7
+bindsym $mod+Shift+8 move container to workspace number 8
+bindsym $mod+Shift+9 move container to workspace number 9
+bindsym $mod+Shift+0 move container to workspace number 10
 # Note: workspaces can have any name you want, not just numbers.
 # We just use 1-10 as the default.
 #
