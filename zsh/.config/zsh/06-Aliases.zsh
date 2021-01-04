@@ -3,6 +3,9 @@
 # Custom aliases for ZSH
 #
 
+# Use android's SDK ADB
+alias adb=~/Android/Sdk/platform-tools/adb
+
 ### Makefile
 alias mk="make"
 alias mc="make clean"
