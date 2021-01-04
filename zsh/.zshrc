@@ -57,9 +57,12 @@ HIST_STAMPS="mm/dd/yyyy"
 # History file location (oh-my-zsh default)
 HISTFILE="$HOME/.zsh_history"
 # Max stored history of a session
-HISTSIZE=50000
+HISTSIZE=10000000
 # History saved in the history file
-SAVEHIST=20000
+SAVEHIST=10000000
+
+# Share command history data between concurrent zsh sessions
+setopt SHARE_HISTORY
 
 # Would you like to use another custom folder than $ZSH/custom?
 ZSH_CUSTOM=$HOME/.config/zsh
@@ -99,12 +102,14 @@ export VISUAL="nvim"
 export TERM="xterm-256color"
 
 # Set env variables for wayland if running it
-if [ -n $WAYLAND_DISPLAY ]; then
+if [ -n "$WAYLAND_DISPLAY" ]; then
+#if [ false ]; then
     export XDG_SESSION_TYPE="wayland"
     export XDG_CURRENT_DESKTOP="sway"
 
     # Enable usage of wayland for QT
     export QT_QPA_PLATFORM="wayland-egl"
+    export QT_QPA_PLATFORMTHEME="qt5ct"
     export QT_WAYLAND_DISABLE_WINDOWDECORATION="1"
     # To use your monitor's DPI instead of the default of 96 DPI:
     export QT_WAYLAND_FORCE_DPI=physical
@@ -142,3 +147,7 @@ export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+# Load yhe zsh syntax highlighting plugin at the end since it requires for all previous methods to be already
+# defined.
+source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
