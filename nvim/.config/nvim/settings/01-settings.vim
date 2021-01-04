@@ -107,3 +107,7 @@ endif
 " Below fix automatically delets buffeer when its commit type
 " else nvr would wait for it to be deleted
 autocmd FileType gitcommit,gitrebase,gitconfig set bufhidden=delete
+
+" Fix terminal window flickering on updates (such as with htop or similar)
+au TermEnter * setlocal scrolloff=0
+au TermLeave * setlocal scrolloff=3

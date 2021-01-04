@@ -141,3 +141,6 @@ map <leader>fd :Clap files --hidden ~/dotfiles<CR>
 
 " Search list of open buffers
 map <leader>fb :Clap buffers<CR>
+
+" Search list of open buffers
+map <leader>fh :Clap history<CR>
