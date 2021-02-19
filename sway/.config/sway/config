@@ -111,7 +111,7 @@ output '*' enable
 #output $EXT_CENTER position 1920 0
 # Home setup
 output $EXT_LEFT position 0 0
-output $LAPTOP_OUT position 1920 0
+output $LAPTOP_OUT position 2560 0
 #output $EXT_CENTER position 1920 0
 
 ############
@@ -209,14 +209,9 @@ input type:keyboard {
     xkb_options caps:escape_shifted_capslock
 }
 
-# Configure one separate seat for external keyboard+mouse
-#seat seat1 {
-#    attach 1241:854:DuckyChannel_International_Co.,_Ltd._Ducky_Keyboard
-#    attach 1241:854:DuckyChannel_International_Co.,_Ltd._Ducky_Keyboard_Mouse
-#    attach 1241:854:DuckyChannel_International_Co.,_Ltd._Ducky_Keyboard_Consumer_Control
-#    attach 1241:854:DuckyChannel_International_Co.,_Ltd._Ducky_Keyboard_System_Control
-#    attach 1133:16511:Logitech_G502
-#}
+output "Unknown M27Q 20460B002218" {
+    subpixel bgr
+}
 
 ################
 # Key bindings #
