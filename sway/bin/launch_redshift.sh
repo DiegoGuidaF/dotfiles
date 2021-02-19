@@ -1,7 +1,8 @@
 #!/bin/bash
-readonly REDSHIFT="redshift"
-readonly PID="$(pidof redshift)"
-readonly PROCESS_STATUS=$(pidof $REDSHIFT>/dev/null && echo "active" || echo "inactive")
+set -x
+readonly PROGRAM="gammastep"
+readonly PID="$(pidof $PROGRAM)"
+readonly PROCESS_STATUS=$(pidof $PROGRAM>/dev/null && echo "active" || echo "inactive")
 
 if [[ $1 == "status" ]]; then
     class=$PROCESS_STATUS
@@ -15,7 +16,7 @@ elif [[ $1 == "toggle" ]]; then
         # Wait until process is stopped since it takes time
         tail --pid=$PID -f /dev/null
     else
-        exec $REDSHIFT&>/dev/null&
+        exec $PROGRAM&>/dev/null&
     fi
 else
     echo 'Wrong arguments'
