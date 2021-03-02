@@ -15,7 +15,7 @@
 #yabai -m signal --add event=dock_did_restart action="sudo yabai --load-sa"
 
 # let simple-bar handle bar
-yabai -m config external_bar all:32:0
+#yabai -m config external_bar all:20:0
 
 # global settings
 yabai -m config mouse_follows_focus          on
@@ -32,7 +32,7 @@ yabai -m config window_opacity_duration      0.0
 yabai -m config active_winow_opacity        1.0
 yabai -m config normal_window_opacity        0.90
 yabai -m config window_border                off
-yabai -m config window_border_width          3
+yabai -m config window_border_width          0
 yabai -m config active_window_border_color   0xffff00
 yabai -m config normal_window_border_color   0xffffcc
 yabai -m config insert_feedback_color        0xffff00
@@ -52,9 +52,9 @@ yabai -m config layout                       bsp
 # yabai -m config bottom_padding               0
 # yabai -m config left_padding                 7
 # yabai -m config right_padding                0
-# yabai -m config window_gap                   0
-yabai -m signal --add event=window_created action="~/refresh.sh"
-yabai -m signal --add event=indow_destroyed action="~/refresh.sh"
+yabai -m config window_gap                   4
+#yabai -m signal --add event=window_created action="~/refresh.sh"
+#yabai -m signal --add event=indow_destroyed action="~/refresh.sh"
 
 # Space labels
 yabai -m space 1 --label "Browser 1"
@@ -117,35 +117,35 @@ yabai -m signal --add event=application_terminated action="yabai -m query --wind
 
 # === simple-bar configurations ===
 # Refresh spaces widget on space change
-yabai -m signal --add event=space_changed action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-spaces-jsx\"'"
-# Refresh spaces widget on display focus change
-yabai -m signal --add event=display_changed action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-spaces-jsx\"'"
-# Refresh process widget on space change
-yabai -m signal --add event=space_changed action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-process-jsx\"'"
-
-# Refresh process widget on when focused application changes
-yabai -m signal --add event=window_focused action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-process-jsx\"'"
-# Refresh spaces widget on when focused application changes
-yabai -m signal --add event=window_focused action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-spaces-jsx\"'"
-
-# Refresh process widget on when focused application changes
-yabai -m signal --add event=application_front_switched action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-process-jsx\"'"
-# Refresh spaces widget on when focused application changes
-yabai -m signal --add event=application_front_switched action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-spaces-jsx\"'"
-
-# Refresh process widget on when an application window is closed
-yabai -m signal --add event=window_destroyed action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-process-jsx\"'"
-# Refresh spaces widget on when an application window is closed
-yabai -m signal --add event=window_destroyed action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-spaces-jsx\"'"
-
-# Refresh process widget when current window title changes
-yabai -m signal --add event=window_title_changed action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-process-jsx\"'"
+#yabai -m signal --add event=space_changed action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-spaces-jsx\"'"
+## Refresh spaces widget on display focus change
+#yabai -m signal --add event=display_changed action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-spaces-jsx\"'"
+## Refresh process widget on space change
+#yabai -m signal --add event=space_changed action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-process-jsx\"'"
+#
+## Refresh process widget on when focused application changes
+#yabai -m signal --add event=window_focused action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-process-jsx\"'"
+## Refresh spaces widget on when focused application changes
+#yabai -m signal --add event=window_focused action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-spaces-jsx\"'"
+#
+## Refresh process widget on when focused application changes
+#yabai -m signal --add event=application_front_switched action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-process-jsx\"'"
+## Refresh spaces widget on when focused application changes
+#yabai -m signal --add event=application_front_switched action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-spaces-jsx\"'"
+#
+## Refresh process widget on when an application window is closed
+#yabai -m signal --add event=window_destroyed action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-process-jsx\"'"
+## Refresh spaces widget on when an application window is closed
+#yabai -m signal --add event=window_destroyed action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-spaces-jsx\"'"
+#
+## Refresh process widget when current window title changes
+#yabai -m signal --add event=window_title_changed action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-process-jsx\"'"
 
 # add the following to the end of your yabairc to have it launch automatically when yabai starts.
 # make sure the limelight binary is added somewhere in your $PATH
 
 # kill any existing limelight process if one exists, before we launch a new one
-killall limelight &> /dev/null
-limelight -c ~/.limelightrc &> /dev/null &
+#killall limelight &> /dev/null
+#limelight -c ~/.limelightrc &> /dev/null &
 
 echo "yabai configuration loaded.."d
