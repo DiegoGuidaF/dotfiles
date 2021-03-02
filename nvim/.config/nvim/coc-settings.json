@@ -1,33 +1,4 @@
 {
     // Set higher priority for coc diagnostics.
-    "diagnostic.signOffset": 9999999,
-    "languageserver": {
-        "ccls": {
-            "command": "ccls",
-            "filetypes": ["c", "cpp", "objc", "objcpp"],
-            "rootPatterns": [".ccls", "compile_commands.json", ".vim/", ".git/", ".hg/"],
-            "initializationOptions": {
-                "cache": {
-                    "directory": "/tmp/ccls"
-                },
-                "client": {
-                    "snippetSupport": true
-                }
-            }
-        },
-
-        "bash": {
-            "command": "bash-language-server",
-            "args": ["start"],
-            "filetypes": ["sh"],
-            "ignoredRootPaths": ["~"]
-        },
-        "dockerfile": {
-            "command": "docker-langserver",
-            "filetypes": ["dockerfile"],
-            "args": ["--stdio"]
-        }
-    },
-    "python.formatting.autopep8Args":["--max-line-length","100"],
-    "java.errors.incompleteClasspath.severity": "ignore"
+    "diagnostic.signOffset": 9999999
 }
