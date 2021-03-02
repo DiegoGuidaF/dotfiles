@@ -1,0 +1,151 @@
+#!/usr/bin/env sh
+
+# the scripting-addition must be loaded manually if
+# you are running yabai on macOS Big Sur. Uncomment
+# the following line to have the injection performed
+# when the config is executed during startup.
+#
+# for this to work you must configure sudo such that
+# it will be able to run the command without password
+#
+# see this wiki page for information:
+#  - https://github.com/koekeishiya/yabai/wiki/Installing-yabai-(latest-release)
+#
+#sudo yabai --load-sa
+#yabai -m signal --add event=dock_did_restart action="sudo yabai --load-sa"
+
+# let simple-bar handle bar
+yabai -m config external_bar all:32:0
+
+# global settings
+yabai -m config mouse_follows_focus          on
+yabai -m config focus_follows_mouse          autofocus
+# Window placement can be first_child or second_child. First option makes new windows be placed on the left, while the second option
+# places them on the right (top/ bottom for horizontal layout)
+yabai -m config window_placement             second_child
+# Floating windows are on top
+yabai -m config window_topmost               on
+# Enable shadows only for floating windows
+yabai -m config window_shadow                float
+yabai -m config window_opacity               off
+yabai -m config window_opacity_duration      0.0
+yabai -m config active_winow_opacity        1.0
+yabai -m config normal_window_opacity        0.90
+yabai -m config window_border                off
+yabai -m config window_border_width          3
+yabai -m config active_window_border_color   0xffff00
+yabai -m config normal_window_border_color   0xffffcc
+yabai -m config insert_feedback_color        0xffff00
+yabai -m config split_ratio                  0.50
+# Balance the window tree upon change, so that all windows occupy the same area.
+yabai -m config auto_balance                 on
+# Keyboard modifier used for moving and resizing windows.
+yabai -m config mouse_modifier               ctrl
+yabai -m config mouse_action1                move
+yabai -m config mouse_action2                resize
+# Action performed when a bsp-managed window is dropped in the center of some other bsp-managed window.
+yabai -m config mouse_drop_action            swap
+
+# general space settings
+yabai -m config layout                       bsp
+# yabai -m config top_padding                  0
+# yabai -m config bottom_padding               0
+# yabai -m config left_padding                 7
+# yabai -m config right_padding                0
+# yabai -m config window_gap                   0
+yabai -m signal --add event=window_created action="~/refresh.sh"
+yabai -m signal --add event=indow_destroyed action="~/refresh.sh"
+
+# Space labels
+yabai -m space 1 --label "Browser 1"
+yabai -m space 2 --label "Dev 2"
+yabai -m space 3 --label "Comms 3"
+yabai -m space 4 --label "Tools 4"
+yabai -m space 5 --label "Social 5"
+yabai -m space 6 --label "Media 6"
+yabai -m space 7 --label "Float 7"
+yabai -m space 8 --label "Misc 8"
+
+# Space config
+yabai -m config --space 6 layout float
+
+# Unmanaged
+yabai -m rule --add app="^System Preferences$" sticky=on layer=above manage=off
+yabai -m rule --add app="^zoom.us$" sticky=on layer=above manage=off border=off
+yabai -m rule --add app="^JetBrains Toolbox$" sticky=on layer=above manage=off border=off
+jetbrain_apps="^(IntelliJ IDEA|WebStorm|PyCharm|CLion|GoLand)$"
+yabai -m rule --add app="${jetbrain_apps}" title="^(Project Structure|Plugins|Run/Debug Configurations|Delete)$" stick=on layer=above manage=off
+
+# Browser
+yabai -m rule --add app="^Brave Browser Beta$"    space=^1
+
+# Dev
+yabai -m rule --add app="^Code - Insiders$"       space=^2
+yabai -m rule --add app="^IntelliJ IDEA$"         space=^2
+yabai -m rule --add app="^iTerm2$"                space=^2 opacity=0.90
+
+# Communication
+yabai -m rule --add app="^Slack$"                 space=^3
+yabai -m rule --add app="^Chat$"                  space=^3
+
+# Tools
+yabai -m rule --add app="^Fork$"                  space=^4
+
+# Social
+yabai -m rule --add app="^Discord$"               space=^5
+yabai -m rule --add app="^WhatsApp$"              space=^5
+yabai -m rule --add app="^Telegram$"              space=^5
+
+# Media
+yabai -m rule --add app="^Music$"                 space=^6
+yabai -m rule --add app="^QuickTime Player$"      space=^6
+yabai -m rule --add app="^VLC$"                   space=^6
+yabai -m rule --add app="^Spotify$"               space=^6
+yabai -m rule --add app="^Firefox$"               space=^6
+
+# Misc
+yabai -m rule --add app="^Finder$"                space=^8
+yabai -m rule --add app="^Microsoft Word$"        space=^8
+yabai -m rule --add app="^Postman$"               space=^8
+yabai -m rule --add app="^Activity Monitor$"      space=^8
+
+# Floating
+
+# signals
+yabai -m signal --add event=window_destroyed action="yabai -m query --windows --window &> /dev/null || yabai -m window --focus mouse"
+yabai -m signal --add event=application_terminated action="yabai -m query --windows --window &> /dev/null || yabai -m window --focus mouse"
+
+# === simple-bar configurations ===
+# Refresh spaces widget on space change
+yabai -m signal --add event=space_changed action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-spaces-jsx\"'"
+# Refresh spaces widget on display focus change
+yabai -m signal --add event=display_changed action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-spaces-jsx\"'"
+# Refresh process widget on space change
+yabai -m signal --add event=space_changed action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-process-jsx\"'"
+
+# Refresh process widget on when focused application changes
+yabai -m signal --add event=window_focused action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-process-jsx\"'"
+# Refresh spaces widget on when focused application changes
+yabai -m signal --add event=window_focused action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-spaces-jsx\"'"
+
+# Refresh process widget on when focused application changes
+yabai -m signal --add event=application_front_switched action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-process-jsx\"'"
+# Refresh spaces widget on when focused application changes
+yabai -m signal --add event=application_front_switched action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-spaces-jsx\"'"
+
+# Refresh process widget on when an application window is closed
+yabai -m signal --add event=window_destroyed action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-process-jsx\"'"
+# Refresh spaces widget on when an application window is closed
+yabai -m signal --add event=window_destroyed action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-spaces-jsx\"'"
+
+# Refresh process widget when current window title changes
+yabai -m signal --add event=window_title_changed action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-process-jsx\"'"
+
+# add the following to the end of your yabairc to have it launch automatically when yabai starts.
+# make sure the limelight binary is added somewhere in your $PATH
+
+# kill any existing limelight process if one exists, before we launch a new one
+killall limelight &> /dev/null
+limelight -c ~/.limelightrc &> /dev/null &
+
+echo "yabai configuration loaded.."d
