@@ -30,7 +30,7 @@ Plug 'neoclide/coc.nvim', {'branch': 'release'}
 "
 " Install coc extensions. This won't keep updating them or install an specific
 " version
-let g:coc_global_extensions = ['coc-json', 'coc-python', 'coc-snippets', 'coc-phpls']
+let g:coc_global_extensions = ['coc-json', 'coc-python', 'coc-snippets']
 " Extra info:
 " Installed watchman with yay to theoretically inform coc when files changes.
 " This should fix behaviour
@@ -59,8 +59,6 @@ Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app & yarn install'  }
 " Alpha state utility to seach through many different things in a popup window
 "Plug 'liuchengxu/vim-clap'
 Plug 'liuchengxu/vim-clap', { 'do': ':Clap install-binary!' }
-
-Plug 'aouelete/sway-vim-syntax'
 
 " Enable writing writing/reading files with privileges by running sudo
 Plug 'lambdalisue/suda.vim'

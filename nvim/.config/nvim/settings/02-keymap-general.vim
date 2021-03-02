@@ -137,7 +137,7 @@ map <leader>fl :Clap grep ++opt=--no-messages<CR>
 map <leader>fw :Clap grep2 ++opt=--no-messages ++query=<cword><CR>
 
 " Search in dotfiles
-map <leader>fd :Clap files --hidden ~/dotfiles<CR>
+map <leader>fd :Clap files --hidden ~/Personal/dotfiles<CR>
 
 " Search list of open buffers
 map <leader>fb :Clap buffers<CR>
