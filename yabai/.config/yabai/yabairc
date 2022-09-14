@@ -1,5 +1,8 @@
-#!/usr/bin/env sh
+#!/usr/bin/env zsh
 
+echo "-- Starting yabai..."
+# Print also to stderr so it is easier to track in error file
+echo "-- Starting yabai..." 1>&2
 # the scripting-addition must be loaded manually if
 # you are running yabai on macOS Big Sur. Uncomment
 # the following line to have the injection performed
@@ -11,31 +14,29 @@
 # see this wiki page for information:
 #  - https://github.com/koekeishiya/yabai/wiki/Installing-yabai-(latest-release)
 #
-#sudo yabai --load-sa
-#yabai -m signal --add event=dock_did_restart action="sudo yabai --load-sa"
-
-# let simple-bar handle bar
-#yabai -m config external_bar all:20:0
+sudo /opt/homebrew/bin/yabai --load-sa
+yabai -m signal --add event=dock_did_restart action="sudo yabai --load-sa"
 
 # global settings
-yabai -m config mouse_follows_focus          off
+yabai -m config mouse_follows_focus          on
+# Can be autofocus, autoraise, off
 yabai -m config focus_follows_mouse          off
+yabai -m config window_origin_display        default
 # Window placement can be first_child or second_child. First option makes new windows be placed on the left, while the second option
 # places them on the right (top/ bottom for horizontal layout)
 yabai -m config window_placement             second_child
-# Floating windows are on top
 yabai -m config window_topmost               on
 # Enable shadows only for floating windows
 yabai -m config window_shadow                float
 yabai -m config window_opacity               off
 yabai -m config window_opacity_duration      0.0
-yabai -m config active_winow_opacity        1.0
+yabai -m config active_window_opacity        1.0
 yabai -m config normal_window_opacity        0.90
 yabai -m config window_border                off
-yabai -m config window_border_width          0
-yabai -m config active_window_border_color   0xffff00
-yabai -m config normal_window_border_color   0xffffcc
-yabai -m config insert_feedback_color        0xffff00
+yabai -m config window_border_width          1
+yabai -m config active_window_border_color   0xff775759
+yabai -m config normal_window_border_color   0xff555555
+yabai -m config insert_feedback_color        0xffd75f5f
 yabai -m config split_ratio                  0.50
 # Balance the window tree upon change, so that all windows occupy the same area.
 yabai -m config auto_balance                 on
@@ -47,108 +48,69 @@ yabai -m config mouse_action2                resize
 yabai -m config mouse_drop_action            swap
 
 # general space settings
-yabai -m config layout                        bsp
-# yabai -m config top_padding                  0
-# yabai -m config bottom_padding               0
-# yabai -m config left_padding                 7
-# yabai -m config right_padding                0
-yabai -m config window_gap                   4
-#yabai -m signal --add event=window_created action="~/refresh.sh"
-#yabai -m signal --add event=indow_destroyed action="~/refresh.sh"
+yabai -m config layout                       bsp
+#yabai -m config top_padding                  12
+#yabai -m config bottom_padding               12
+#yabai -m config left_padding                 12
+#yabai -m config right_padding                12
+yabai -m config window_gap                    3
 
-# Space labels
-yabai -m space 1 --label "1 Browser-Dev"
-yabai -m space 2 --label "2 Browser Pers"
-yabai -m space 3 --label "3 Pers"
-yabai -m space 4 --label "4 Work"
-yabai -m space 5 --label "5 Social"
-yabai -m space 6 --label "6 Media"
-yabai -m space 7 --label "7 Zoom"
-yabai -m space 8 --label "8 Misc"
-yabai -m space 9 --label "9 Extra"
+### Space labels ###
+yabai -m space 1 --label "browser-dev"
+yabai -m space 2 --label "browser-pers"
+yabai -m space 3 --label "term"
+yabai -m space 4 --label "intellij"
+yabai -m space 5 --label "slack"
+yabai -m space 6 --label "media"
+yabai -m space 7 --label "zoom"
+yabai -m space 8 --label "calendar"
+yabai -m space 9 --label "extra"
+yabai -m space 10 --label "extra2"
 
-# Space config
-#yabai -m config --space 6 layout float
+### Spaces setup ###
+# Be careful with this, the rule should always match ONLY the window we want moved.
+# else anytime any dialog of the app matches, focus will move to that screen along
+# with the dialog.
+# If ^ is present, follow focus.
+yabai -m rule --add app="^Slack$"                                       space=^"slack"
 
-# Only manage known apps
-managed_apps="^(Vivaldi|kitty|IntelliJ IDEA|Slack|WhatsApp|Telegram|Spotify)$"
+yabai -m rule --add app="^Spotify$"                                     space=^"media"
 
-# Rule so that anything that is NOT on the managed_apps is not managed by yabai
-yabai -m rule --add app!="${managed_apps}" manage=off
+yabai -m rule --add app="^zoom.us$" title="^Zoom Meeting$"              space=^"zoom"
 
-# Unmanaged
-#yabai -m rule --add app="^System Preferences$" sticky=on layer=above manage=off
-#yabai -m rule --add app="^GlobalProtect$" title="^GlobalProtect Settings$" sticky=on layer=above manage=off
-#yabai -m rule --add app="^Calculator$" sticky=on layer=above manage=off
-#yabai -m rule --add app="^zoom.us$" sticky=on layer=above manage=off border=off
-#yabai -m rule --add app="^JetBrains Toolbox$" sticky=on layer=above manage=off border=off
-#jetbrain_apps="^(IntelliJ IDEA|WebStorm|PyCharm|CLion|GoLand)$"
-#yabai -m rule --add app="${jetbrain_apps}" title="^(Project Structure|Plugins|Run/Debug Configurations|Delete|Tip of the Day|Preferences|Push Commits)$" sticky=off layer=above manage=off
-#yabai -m rule --add app="^Citrix.*" sticky=off layer=above manage=off border=off
+yabai -m rule --add app="^Finder$"                                      space=^"extra"
+yabai -m rule --add app="^Calendar$"                                    space=^"calendar"
 
-# Communication
-#yabai -m rule --add app="^Slack$"                 space=^5
-#yabai -m rule --add app="^Chat$"                  space=^5
-#yabai -m rule --add app="^Discord$"               space=^5
-#yabai -m rule --add app="^WhatsApp$"              space=^5
-#yabai -m rule --add app="^Telegram$"              space=^5
-#
-## Media
-#yabai -m rule --add app="^Music$"                 space=^6
-#yabai -m rule --add app="^QuickTime Player$"      space=^6
-#yabai -m rule --add app="^VLC$"                   space=^6
-#yabai -m rule --add app="^Spotify$"               space=^6
-#
-## eMeetings
-## Removed since it is annoying for zoom windows to be automatically moved
-## Probably needs improvement
-##yabai -m rule --add app="^zoom.us$"               space=^7
-#
-## Misc
-#yabai -m rule --add app="^Finder$"                space=^8
-#yabai -m rule --add app="^Microsoft Word$"        space=^8
-#yabai -m rule --add app="^Postman$"               space=^8
-#yabai -m rule --add app="^Activity Monitor$"      space=^8
-#
-#
-## Citrix
-#yabai -m rule --add app="^Citrix.*"              space=^9
+yabai -m rule --add app="^Microsoft Teams$" title="Microsoft Teams$"    space=^"slack"
+# Matches the popup for signin
+yabai -m rule --add app="^Microsoft Teams$" title="^$"                  space="extra2"
 
-# signals
-#yabai -m signal --add event=window_destroyed action="yabai -m query --windows --window &> /dev/null || yabai -m window --focus mouse"
-#yabai -m signal --add event=application_terminated action="yabai -m query --windows --window &> /dev/null || yabai -m window --focus mouse"
+yabai -m rule --add app="^Microsoft Outlook$" title="^Inbox "           space=^"extra"
+# Matches the popup for signin
+yabai -m rule --add app="^Microsoft Outlook$" title="^$"                space="extra2"
+yabai -m rule --add app="^Activity Monitor$"                            space=^"extra2"
 
-# === simple-bar configurations ===
-# Refresh spaces widget on space change
-#yabai -m signal --add event=space_changed action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-spaces-jsx\"'"
-## Refresh spaces widget on display focus change
-#yabai -m signal --add event=display_changed action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-spaces-jsx\"'"
-## Refresh process widget on space change
-#yabai -m signal --add event=space_changed action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-process-jsx\"'"
-#
-## Refresh process widget on when focused application changes
-#yabai -m signal --add event=window_focused action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-process-jsx\"'"
-## Refresh spaces widget on when focused application changes
-#yabai -m signal --add event=window_focused action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-spaces-jsx\"'"
-#
-## Refresh process widget on when focused application changes
-#yabai -m signal --add event=application_front_switched action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-process-jsx\"'"
-## Refresh spaces widget on when focused application changes
-#yabai -m signal --add event=application_front_switched action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-spaces-jsx\"'"
-#
-## Refresh process widget on when an application window is closed
-#yabai -m signal --add event=window_destroyed action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-process-jsx\"'"
-## Refresh spaces widget on when an application window is closed
-#yabai -m signal --add event=window_destroyed action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-spaces-jsx\"'"
-#
-## Refresh process widget when current window title changes
-#yabai -m signal --add event=window_title_changed action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"simple-bar-process-jsx\"'"
+### RULES ###
+# Mac
+yabai -m rule --add app="^System Preferences$" sticky=on layer=above manage=off
+yabai -m rule --add title="^About This Mac$" manage=off
+yabai -m rule --add app="^About This Mac$" manage=off
 
-# add the following to the end of your yabairc to have it launch automatically when yabai starts.
-# make sure the limelight binary is added somewhere in your $PATH
+# Software
+yabai -m rule --add app="^choose$" sticky=on layer=above manage=off
+yabai -m rule --add app="^GlobalProtect$" title="^GlobalProtect Settings$" sticky=on layer=above manage=off
+yabai -m rule --add app="^Calculator$" sticky=on layer=above manage=off
+yabai -m rule --add app="^zoom.us$" manage=off
+yabai -m rule --add app="^JetBrains Toolbox$" sticky=on layer=above manage=off border=off
+jetbrain_apps="^(IntelliJ IDEA|WebStorm|PyCharm|CLion|GoLand)$"
+yabai -m rule --add app="${jetbrain_apps}" title="^(Project Structure|Plugins|Run/Debug Configurations|Delete|Tip of the Day|Preferences|Push Commits|Rename|New Mapping)$" sticky=off layer=above manage=off
+yabai -m rule --add app="^1Password$" sticky=on layer=above
 
-# kill any existing limelight process if one exists, before we launch a new one
-#killall limelight &> /dev/null
-#limelight -c ~/.limelightrc &> /dev/null &
 
-echo "yabai configuration loaded.."d
+# SIGNALS
+# This makes windows with weird size float instead of trying to tile them.
+yabai -m signal --add event=window_created action='yabai -m query --windows --window $YABAI_WINDOW_ID | jq -e ".\"can-resize\" == false and .\"is-floating\" == false " && yabai -m window $YABAI_WINDOW_ID --toggle float'
+
+echo "-- Yabai configuration loaded..\n"
+# Print also to stderr so it is easier to track in error file
+echo "-- Yabai configuration loaded..\n" 1>&2

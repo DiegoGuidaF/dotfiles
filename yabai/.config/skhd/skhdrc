@@ -105,50 +105,67 @@
 #    "qutebrowser"
 # ]
 
-# open terminal, blazingly fast compared to iTerm/Hyper
-shift + alt - return : /Applications/kitty.app/Contents/MacOS/kitty --single-instance -d ~ sh -c "nvim +star -c term"
+
+# Restart yabai quickly!
+ctrl + cmd - r : launchctl kickstart -k "gui/${UID}/homebrew.mxcl.yabai"
+
+# open terminal
+shift + ctrl - return : /Applications/kitty.app/Contents/MacOS/kitty --single-instance -d ~ sh -c "nvim +star -c term"
 
 # open browser
-shift + alt - q : /Applications/Vivaldi.app/Contents/MacOS/Vivaldi
+shift + ctrl - q : /Applications/Vivaldi.app/Contents/MacOS/Vivaldi
 
 ## Focus window
 # Focus the window to the right, if none focus the display on the right, the window on the left side
-alt - h : yabai -m window --focus west || $(yabai -m display --focus west && yabai -m window --focus last)
-alt - j : yabai -m window --focus south
-alt - k : yabai -m window --focus north
+ctrl - h : yabai -m window --focus west || $(yabai -m display --focus west && yabai -m window --focus last)
+ctrl - j : yabai -m window --focus south
+ctrl - k : yabai -m window --focus north
 # Focus the window to the left, if none focus the display on the left, the window on the right side
-alt - l : yabai -m window --focus east || $(yabai -m display --focus east && yabai -m window --focus first)
+ctrl - l : yabai -m window --focus east || $(yabai -m display --focus east && yabai -m window --focus first)
 
 # move window to space
-shift + alt - 1 : yabai -m window --space 1
-shift + alt - 2 : yabai -m window --space 2
-shift + alt - 3 : yabai -m window --space 3
-shift + alt - 4 : yabai -m window --space 4
-shift + alt - 5 : yabai -m window --space 5
-shift + alt - 6 : yabai -m window --space 6
-shift + alt - 7 : yabai -m window --space 7
-shift + alt - 8 : yabai -m window --space 8
-shift + alt - 9 : yabai -m window --space 9
+shift + ctrl - 1 : yabai -m window --space browser-dev
+shift + ctrl - 2 : yabai -m window --space browser-pers
+shift + ctrl - 3 : yabai -m window --space term
+shift + ctrl - 4 : yabai -m window --space intellij
+shift + ctrl - 5 : yabai -m window --space slack
+shift + ctrl - 6 : yabai -m window --space media
+shift + ctrl - 7 : yabai -m window --space zoom
+shift + ctrl - 8 : yabai -m window --space calendar
+shift + ctrl - 9 : yabai -m window --space extra
+shift + ctrl - 0 : yabai -m window --space extra2
 
 # Toggle current window floating
-alt - space : yabai -m window --toggle float
+ctrl - space : yabai -m window --toggle float
 
 ### COMMANDS REQUIRING SCRIPTING ADDITIONS ##
 
 ## Go to prev focused SPACE
-# alt - z : yabai -m space --focus prev
+ctrl - z : yabai -m space --focus prev
 
 ## Make window sticky (shown in all spaces of screen)
 # yabai -m window --toggle sticky
 
 ## Focus space
-#alt - 1 : yabai -m space --focus 1
-#alt - 1 : yabai -m space --focus 1
-#alt - 2 : yabai -m space --focus 2
-#alt - 3 : yabai -m space --focus 3
-#alt - 4 : yabai -m space --focus 4
-#alt - 5 : yabai -m space --focus 5
-#alt - 6 : yabai -m space --focus 6
+ctrl - 1 : yabai -m space --focus browser-dev
+ctrl - 2 : yabai -m space --focus browser-pers
+ctrl - 3 : yabai -m space --focus term
+ctrl - 4 : yabai -m space --focus intellij
+ctrl - 5 : yabai -m space --focus slack
+ctrl - 6 : yabai -m space --focus media
+ctrl - 7 : yabai -m space --focus zoom
+ctrl - 8 : yabai -m space --focus calendar
+ctrl - 9 : yabai -m space --focus extra
+ctrl - 0 : yabai -m space --focus extra2
+
+# Make window fullscreen
+ctrl - f : yabai -m window --toggle zoom-fullscreen
+
+ctrl - t : python3 $HOME/scripts/yabman.py --go-space
+shift + ctrl - t : python3 $HOME/scripts/yabman.py --go-window
+
+# Move window to another display
+ctrl - q : yabai -m space --display $(yabai -m query --spaces | jq -er '.[] | select(."has-focus" and ."is-visible") | if (.display == 1) then  2 else 1 end')
 
 #############################################
 
