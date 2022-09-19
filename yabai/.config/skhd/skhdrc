@@ -141,7 +141,7 @@ ctrl - space : yabai -m window --toggle float
 ### COMMANDS REQUIRING SCRIPTING ADDITIONS ##
 
 ## Go to prev focused SPACE
-ctrl - z : yabai -m space --focus prev
+ctrl - z : yabai -m space --focus recent
 
 ## Make window sticky (shown in all spaces of screen)
 # yabai -m window --toggle sticky
@@ -161,8 +161,8 @@ ctrl - 0 : yabai -m space --focus extra2
 # Make window fullscreen
 ctrl - f : yabai -m window --toggle zoom-fullscreen
 
-ctrl - t : python3 $HOME/scripts/yabman.py --go-space
-shift + ctrl - t : python3 $HOME/scripts/yabman.py --go-window
+ctrl - t : python3 $HOME/.config/yabai/scripts/yabman.py --go-space
+shift + ctrl - t : python3 $HOME/.config/yabai/scripts/yabman.py --go-window
 
 # Move window to another display
 ctrl - q : yabai -m space --display $(yabai -m query --spaces | jq -er '.[] | select(."has-focus" and ."is-visible") | if (.display == 1) then  2 else 1 end')

@@ -42,91 +42,108 @@ def arg_parser():
 
     return args
 
+class YabaiClient:
+    def __init__(self):
+        pass
 
+    # Something weird happening after refactor!
+    def _query_cmd(self, cmd):
+        res = self._yabai_cmd(['query', f'--{cmd}'])
+        return json.loads(res.stdout.decode())
+
+    def _focus_cmd(self, cmd, entity_id):
+        self._yabai_cmd([cmd, '--focus', f'{entity_id}'])
+
+    #def _change_space_display(self, space, display):
+
+    def _yabai_cmd(self, params):
+        res = subprocess.run(
+                YABAI_CMD + params,
+                capture_output=True)
+        if res.stderr:
+            logger.error(f"error found: {res.stderr}")
+            exit
+        return res
+
+class Windows(YabaiClient):
+    """
+    Sample output for a single window
+    {"id":4145, "pid":44531, "app":"Vivaldi", "title":"Session expired - Vivaldi", 
+            "frame":{ "x":481.0000, "y":565.0000, "w":1279.0000, "h":875.0000 },
+        "role":"AXWindow", "subrole":"AXStandardWindow", "tags":"0x0300000000080409", "display":1, "space":6, "level":0,
+        "opacity":1.0000, "split-type":"vertical", "stack-index":0, "can-move":true, "can-resize":true, "has-focus":false,
+        "has-shadow":false, "has-border":false, "has-parent-zoom":false, "has-fullscreen-zoom":false, "is-native-fullscreen":false,
+        "is-visible":false, "is-minimized":false, "is-hidden":false, "is-floating":false, "is-sticky":false, "is-topmost":false,
+        "is-grabbed":false
+    }}
+    """
+    def __init__(self):
+        self.windows = self._query_cmd("windows")
+        self._add_friendlyNames()
+
+    def _add_friendlyNames(self):
+        for window in self.windows:
+            window["friendlyName"] = "{app} || {title}".format(**window)
+
+    def focus(self, window):
+        self._focus_cmd("window", window["id"])
+        logger.info(f'Focused window {window["friendlyName"]}')
+
+    def get(self):
+        return self.windows
+
+class Spaces(YabaiClient):
+    def __init__(self):
+        self.spaces = self._query_cmd("spaces")
+        self._add_friendlyNames()
+
+    def _add_friendlyNames(self):
+        for space in self.spaces:
+            space["friendlyName"] = "{label}".format(**space)
+
+    def focus(self, space):
+        self._focus_cmd("space", space["index"])
+        logger.info(f'Focused space {space["friendlyName"]}')
+
+
+    def get(self):
+        return self.spaces
         
 class Yabman:
 
     def __init__(self):
         pass
 
-    def _get_windows(self):
-        return self._query_cmd("windows")
 
-    def _get_spaces(self):
-        return self._query_cmd("spaces")
+    def _choose_entity(self, entities):
+        choose_options = "\n".join([option["friendlyName"] for option in entities])
+        logger.info(f"Launching choose to get WS name.")
 
-    def _query_cmd(self, cmd):
-        res = subprocess.run(
-                YABAI_CMD + ['query', f'--{cmd}'],
-                capture_output=True).stdout.decode()
-        res = json.loads(res)
-        return res
-
-    def _choose_from_options(self, options):
-        chosen_option = subprocess.run(
-                CHOOSE_CMD,
-                input=options,
+        # TODO: Manage case were chose window is closen with ESC
+        chosen_option_index = int(subprocess.run(
+                CHOOSE_CMD + ["-i"],
+                input=choose_options,
                 encoding='utf',
-                capture_output=True).stdout
-        logger.info(f"Chosen ws name is {chosen_option}")
-        return chosen_option
+                capture_output=True).stdout)
+        logger.info(f"Chosen element is {entities[chosen_option_index]}")
+        return entities[chosen_option_index]
 
-    def _parse_spaces_names(self, spaces):
-        spaces_names = []
-        for space in spaces:
-            spaces_names.append("{index}.{label}".format(**space))
-        logger.debug(f"Available spaces: {spaces_names}")
-        return spaces_names
+    def go_to_space(self):
+        spaces = Spaces()
+        chosen_space = self._choose_entity(spaces.get())
+        spaces.focus(chosen_space)
 
-    def _parse_windows_names(self, windows):
-        windows_names = []
-        for window in windows:
-            windows_names.append("{app} || {title} || {id}".format(**window))
-        logger.debug(f"Available windows: {windows_names}")
-        return windows_names
-
-    def choose_space(self, spaces):
-        spaces_list = ""
-        parsed_spaces = self._parse_spaces_names(spaces)
-        for space_name in parsed_spaces:
-            spaces_list += space_name + '\n'
-
-        return self._choose_from_options(spaces_list)
-
-    def choose_window(self, windows):
-        windows_list = ""
-        parsed_windows = self._parse_windows_names(windows)
-        for window_name in parsed_windows:
-            windows_list += window_name + '\n'
-
-        return self._choose_from_options(windows_list)
-
-    def focus_space(self, space_name):
-        space_name = space_name.split('.')[1]
-        subprocess.run(
-                YABAI_CMD + ['space', '--focus', space_name],
-                capture_output=True).stdout.decode()
-        logger.info(f"Focused space {space_name}")
-
-    def focus_window(self, window_name):
-        window_id = window_name.split('||')[2].strip()
-        subprocess.run(
-                YABAI_CMD + ['window', '--focus', window_id],
-                capture_output=True).stdout.decode()
-        logger.info(f"Focused window {window_id}")
+    def go_to_window(self):
+        windows = Windows()
+        chosen_window = self._choose_entity(windows.get())
+        windows.focus(chosen_window)
 
     def run(self, args):
         if args.go_space:
-            spaces = self._get_spaces()
-            logger.info(f"Launching choose to get WS name.")
-            chosen_space = self.choose_space(spaces)
-            self.focus_space(chosen_space)
+            self.go_to_space()
 
         elif args.go_window:
-            windows = self._get_windows()
-            logger.info(f"Launching choose to get window name.")
-            chosen_window = self.choose_window(windows)
-            self.focus_window(chosen_window)
+            self.go_to_window()
 
 
 if __name__ == "__main__":
